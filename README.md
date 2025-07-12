@@ -58,6 +58,15 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
         - `sales_teams.csv`
         - `data_dictionary.csv`
 
+    - Alternatively, download and unzip as follow:: 
+        ```bash
+        mkdir -p data/raw/crm-sales-opportunities
+        curl -L -o ./data/raw/crm-sales-opportunities.zip\
+            https://www.kaggle.com/api/v1/datasets/download/innocentmfa/crm-sales-opportunities
+        unzip -u data/raw/crm-sales-opportunities.zip -d data/raw/crm-sales-opportunities 
+        ```
+
+
 5. **Train the model**
 
     ```bash
