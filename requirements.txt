@@ -3,3 +3,5 @@ scikit-learn
 joblib
 streamlit
 kaggle
+jupyter
+matplotlib
