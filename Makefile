@@ -84,7 +84,7 @@ app_docker_build:
 	@$(MAKE) docker_build SERVICE=app TAG=$(APP_TAG)
 
 app_docker_start:
-	@$(MAKE) docker_start SERVICE=app PORT=$(APP_PORT) TAG=$(API_TAG)
+	@$(MAKE) docker_start SERVICE=app PORT=$(APP_PORT) TAG=$(APP_TAG)
 
 app_docker_stop:
 	@$(MAKE) docker_stop SERVICE=app

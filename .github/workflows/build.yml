@@ -31,7 +31,9 @@ jobs:
     environment: dev
     
     env:
-      PROJECT: ${{ vars.PROJECT }}
+      PROJECT: aisrm
+      API_TAG: dev
+      API_PORT: 8500
 
     steps:
     - uses: actions/checkout@v3
@@ -40,10 +42,10 @@ jobs:
       run: pip install pytest
 
     - name: Build API Docker image
-      run: make docker_build SERVICE=api
+      run: make docker_build SERVICE=api TAG=${{ env.API_TAG }}
     
     - name: Run API Docker container
-      run: make docker_start SERVICE=api PORT=8000
+      run: make docker_start SERVICE=api PORT=${{ env.API_PORT }} TAG=${{ env.API_TAG }}
     
     - name: Test API container
       run: make test_api
@@ -57,7 +59,9 @@ jobs:
     environment: dev
     
     env:
-      PROJECT: ${{ vars.PROJECT }}
+      PROJECT: aisrm
+      APP_TAG: dev
+      APP_PORT: 8501
 
     steps:
     - uses: actions/checkout@v3
@@ -66,10 +70,10 @@ jobs:
       run: pip install pytest
 
     - name: Build APP Docker image
-      run: make docker_build SERVICE=app
+      run: make docker_build SERVICE=app TAG=${{ env.APP_TAG }}
     
     - name: Run APP Docker container
-      run: make docker_start SERVICE=app PORT=8501
+      run: make docker_start SERVICE=app PORT=${{ env.APP_PORT }} TAG=${{ env.APP_TAG }}
     
     - name: Test APP container
       run: make test_app
