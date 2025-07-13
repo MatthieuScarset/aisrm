@@ -1,5 +1,22 @@
+# Testing
+pytest
+pylint
+ipdb
+black
+
+# Data analysis & visualization
+matplotlib
+seaborn
+jupyterlab
+notebook
+black[jupyter]
+numpy
 pandas
 scikit-learn
-joblib
+
+# Backend
+fastapi
+uvicorn
+
+# Frontend
 streamlit
-kaggle

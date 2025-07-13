@@ -1,0 +1,12 @@
+# Testing
+pytest
+pylint
+ipdb
+black
+
+# Backend
+fastapi
+uvicorn
+
+# Frontend
+streamlit
