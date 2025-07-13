@@ -5,19 +5,32 @@ PYTHON_EXEC = python -B -m
 ## ===================
 ## Available commands:
 ## ===================
+## 
+## Global
+## ------
 ## init:		Create your virtual environment
 ## requirements:	Install or update Python dependencies.
 ## clean:		Clean up temporary files and directories.
 ## lint:		Run pylint.
 ## tests:		Run tests.
-##
+## 
+## Data:
+## ------
 ## data_extract:	Get or update initial raw data.
-##
+## 
+## Development:
+## ------
 ## dev_api: 	Run the backend service.
 ## dev_app: 	Run the frontend service.
+## 
+## Deployment:
+## ------
 ## docker_build: 	Build app.
 ## docker_run: 	Run app.
 ## docker_stop: 	Kill app.
+## docker_build_prod: 	Build app for production.
+## docker_push_prod: 	Publish app to artifact repository.
+## deploy_to_cloud: 	Deploy app to production.
 
 help:
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
@@ -30,6 +43,7 @@ init:
 	pyenv install $(PYTHON_VERSION)
 	pyenv virtualenv $(PYTHON_VERSION) $(PYTHON_VENV)
 	pyenv local $(PYTHON_VENV)
+	make requirements
 
 requirements:
 	$(PYTHON_EXEC) pip install -U pip
@@ -63,7 +77,7 @@ dev_app:
 
 # CI-related commands
 docker_build:
-	docker build --build-arg --tag=$(PROJECT):dev .
+	docker build --tag=$(PROJECT):dev .
 
 docker_run:
 	docker run -it -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(PROJECT):dev
@@ -79,3 +93,8 @@ docker_build_prod:
 	docker build --platform linux/amd64 --build-arg --tag=$(IMAGE_URI) .
 	mv requirements-dev.txt requirements.txt
 
+docker_push_prod:
+	@echo "Work in progress"
+
+deploy_to_cloud:
+	@echo "Work in progress"
