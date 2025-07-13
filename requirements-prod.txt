@@ -1,3 +1,6 @@
+# Dependencies
+-r requirements-test.txt
+
 # Backend
 fastapi
 uvicorn

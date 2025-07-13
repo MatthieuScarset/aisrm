@@ -1,11 +1,5 @@
-# Prod dependencies
+# Dependencies
 -r requirements-prod.txt
-
-# Testing
-pytest
-pylint
-ipdb
-black
 
 # Data analysis & visualization
 matplotlib
