@@ -1,12 +1,24 @@
-FROM python:3.10-slim-bookworm
+FROM python:3.10-slim
 
-COPY requirements.txt requirements.txt
+# Build argument for environment
+ARG ENV=dev
 
-RUN pip install -U pip cython wheel
-RUN pip install -r requirements.txt
+# Copy requirements files first
+COPY requirements-*.txt ./
 
+# Select the appropriate requirements file based on ENV
+RUN cp requirements-${ENV}.txt requirements.txt
+
+# Install Python dependencies and clean up in one layer
+RUN pip install -U pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip cache purge
+
+# Copy backend application folder
 COPY api api
 
-EXPOSE 8000
+# Copy frontend application folder
+COPY app app
 
+# Run backend application on default port
 CMD ["sh", "-c", "uvicorn api.run:app --host 0.0.0.0 --port ${PORT}"]

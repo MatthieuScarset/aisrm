@@ -1,0 +1,18 @@
+# Prod dependencies
+-r requirements-prod.txt
+
+# Testing
+pytest
+pylint
+ipdb
+black
+
+# Data analysis & visualization
+matplotlib
+seaborn
+jupyterlab
+notebook
+black[jupyter]
+numpy
+pandas
+scikit-learn

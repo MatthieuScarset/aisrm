@@ -7,17 +7,15 @@ app = FastAPI()
 # Allowing all middleware is optional, but good practice for dev purposes.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],  # Allows all origins
-    allow_credentials = True,
-    allow_methods=['*'],  # Allows all methods
-    allow_headers=['*'],  # Allows all headers
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
 
-@app.get('/')
+
+@app.get("/")
 def root():
-    response = {
-        'greeting': 'Hello from AISMR',
-        'timestamp': datetime.now()
-    }
+    response = {"greeting": "Hello from AISMR", "timestamp": datetime.now()}
 
     return response

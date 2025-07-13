@@ -25,6 +25,12 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 
     - Make sure you have [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) installed.
 
+    - Create your environment file:
+
+        ```bash
+    	cp .env.example .env
+        ```
+
     - Create and activate a new virtual environment:
 
         ```bash

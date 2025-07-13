@@ -1,10 +1,6 @@
 # Makefile for CRM Sales Opportunities Data Processing
 .DEFAULT_GOAL := default
-PYTHON_EXEC = python -B -m # Python module executor: -B prevents .pyc generation, -m runs modules
-PYTHON_VENV = aisrm-env
-PYTHON_VERSION = 3.10.6
-RAW_DATA_URL = https://www.kaggle.com/api/v1/datasets/download/innocentmfa/crm-sales-opportunities
-RAW_DATA_ARCHIVE = crm-sales-opportunities.zip
+PYTHON_EXEC = python -B -m
 
 ## ===================
 ## Available commands:
@@ -14,6 +10,8 @@ RAW_DATA_ARCHIVE = crm-sales-opportunities.zip
 ## data_extract:	Get or update initial raw data.
 ## pylint:		Run pylint.
 ## pytest:		Run unit tests.
+## docker_build: 	Build the container.
+## docker_run: 	Run the containerized app.
 
 help:
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
@@ -28,8 +26,8 @@ init:
 	pyenv local $(PYTHON_VENV)
 
 requirements:
-	$(PYTHON_EXEC) pip install -U pip cython wheel
-	$(PYTHON_EXEC) pip install -r requirements.txt
+	$(PYTHON_EXEC) pip install -U pip
+	$(PYTHON_EXEC) pip install -r requirements-$(ENV).txt
 
 clean:
 	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
@@ -51,11 +49,11 @@ data_extract:
 	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
 # CI-related commands
-docker_build_dev:
-	docker build --tag=$(IMAGE):dev .
+docker_build:
+	docker build --build-arg ENV=$(ENV) --file=$(DOCKER_FILE) --tag=$(IMAGE_URI) .
 
-docker_build_prod:
-	docker build --tag=$(IMAGE_URI) .
+docker_run:
+	docker run -it --name=$(PROJECT) -e  PORT=8000 -p 8080:8000 $(IMAGE_URI)
 
-docker_run_dev:
-	docker run -it -e PORT=8000 -p 8080:8000 $(IMAGE):dev
+docker_stop:
+	docker stop $(PROJECT) && docker rm $(PROJECT)

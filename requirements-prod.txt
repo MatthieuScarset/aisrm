@@ -1,0 +1,6 @@
+# Backend
+fastapi
+uvicorn
+
+# Frontend
+streamlit
