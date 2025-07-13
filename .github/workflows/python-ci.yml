@@ -10,6 +10,10 @@ jobs:
   build-test:
 
     runs-on: ubuntu-latest
+    
+    env:
+      IMAGE_URI: gh:dev
+      BUILD_ENV: prod
 
     steps:
     # Checkout branch that triggered the event.

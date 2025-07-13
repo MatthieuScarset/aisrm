@@ -28,7 +28,7 @@ init:
 
 requirements:
 	$(PYTHON_EXEC) pip install -U pip
-	$(PYTHON_EXEC) pip install -r requirements-$(ENV).txt
+	$(PYTHON_EXEC) pip install -r requirements-$(BUILD_ENV).txt
 
 clean:
 	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
@@ -51,7 +51,7 @@ data_extract:
 
 # CI-related commands
 docker_build:
-	docker build --build-arg ENV=$(ENV) --file=$(DOCKER_FILE) --tag=$(IMAGE_URI) .
+	docker build --build-arg BUILD_ENV=$(BUILD_ENV) --tag=$(IMAGE_URI) .
 
 docker_run:
 	docker run -it --name=$(PROJECT) -e  PORT=8000 -p 8080:8000 $(IMAGE_URI)

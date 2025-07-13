@@ -1,13 +1,13 @@
 FROM python:3.10-slim
 
 # Build argument for environment
-ARG ENV=dev
+ARG BUILD_ENV=dev
 
 # Copy requirements files first
 COPY requirements-*.txt ./
 
-# Select the appropriate requirements file based on ENV
-RUN cp requirements-${ENV}.txt requirements.txt
+# Select the appropriate requirements file based on BUILD_ENV
+RUN cp requirements-${BUILD_ENV}.txt requirements.txt
 
 # Install Python dependencies and clean up in one layer
 RUN pip install -U pip \
