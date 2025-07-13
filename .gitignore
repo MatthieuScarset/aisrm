@@ -1,5 +1,6 @@
 # Local & temporary files.
 .venv/
+.devcontainer/
 __pycache__/
 *.pyc
 *.zip
