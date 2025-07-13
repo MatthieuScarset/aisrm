@@ -12,9 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     
-    env:
-      ENV: dev
-    
     steps:
     # Checkout branch that triggered the event.
     - uses: actions/checkout@v3
@@ -38,10 +35,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: code-check
     environment: dev
-    
-    env:
-      ENV: dev
-      PROJECT: aisrm-lewagon
 
     steps:
     - uses: actions/checkout@v3
