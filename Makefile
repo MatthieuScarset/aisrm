@@ -1,6 +1,8 @@
 # Makefile for CRM Sales Opportunities Data Processing
 .DEFAULT_GOAL := default
 PMX = python -B -m # Python module executor: -B prevents .pyc generation, -m runs modules
+PYTHON_VENV = aisrm-env
+PYTHON_VERSION = 3.10.6
 RAW_DATA_URL = https://www.kaggle.com/api/v1/datasets/download/innocentmfa/crm-sales-opportunities
 RAW_DATA_ARCHIVE = crm-sales-opportunities.zip
 
@@ -19,6 +21,11 @@ help:
 default: tests
 
 tests: pylint pytest
+
+init:
+	pyenv install $(PYTHON_VERSION)
+	pyenv virtualenv $(PYTHON_VERSION) $(PYTHON_VENV)
+	pyenv local $(PYTHON_VENV)
 
 requirements:
 	$(PMX) pip install -U pip

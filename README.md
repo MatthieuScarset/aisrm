@@ -24,17 +24,11 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 2. **Set up your Python environment**
 
     - Make sure you have [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) installed.
-    - Install the correct Python version (if not already):
-
-        ```bash
-        pyenv install 3.10.6
-        ```
 
     - Create and activate a new virtual environment:
 
         ```bash
-        pyenv virtualenv 3.10.6 aisrm-env
-        pyenv local aisrm-env
+        make init
         ```
 
     - Install dependencies
