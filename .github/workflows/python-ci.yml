@@ -25,9 +25,9 @@ jobs:
     - name: Install dependencies
       run: make requirements
 
-    # Run tests.
-    - name: Run tests
-      run: make tests
+    # Run linters.
+    - name: Code check
+      run: make lint
 
     # Build Docker image.
     - name: Build Docker image
@@ -36,6 +36,10 @@ jobs:
     # Run Docker container.
     - name: Run Docker container
       run: make docker_run
+
+    # Run tests.
+    - name: Run tests
+      run: make tests
 
     # Stop and remove container.
     - name: Stop API Container

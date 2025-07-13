@@ -5,20 +5,21 @@ PYTHON_EXEC = python -B -m
 ## ===================
 ## Available commands:
 ## ===================
+## init:	Create your virtual environment
 ## requirements:	Install or update Python dependencies.
 ## clean:		Clean up temporary files and directories.
+## lint:		Run pylint.
+## tests:		Run tests.
+## docker_build: 	Build app.
+## docker_run: 	Run app.
+## docker_stop: 	Kill app.
 ## data_extract:	Get or update initial raw data.
-## pylint:		Run pylint.
-## pytest:		Run unit tests.
-## docker_build: 	Build the container.
-## docker_run: 	Run the containerized app.
 
 help:
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
-default: tests
-
-tests: pylint pytest
+default: _default
+_default: pylint pytest
 
 init:
 	pyenv install $(PYTHON_VERSION)
@@ -34,11 +35,11 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
-pylint:
-	find . -iname "*.py" -not -path "./tests/*" | xargs -n1 -I {}  pylint --output-format=colorized {}; true
+lint:
+	find . -iname "*.py" -not -path "./tests/*" | xargs -I {} pylint --output-format=colorized {}; true
 	$(PYTHON_EXEC) black .
 
-pytest:
+tests:
 	$(PYTHON_EXEC) pytest -v --color=yes
 
 # Data-related commands
