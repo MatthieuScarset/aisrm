@@ -1,7 +1,6 @@
 # Testing
 pytest
 pylint
-ipdb
 black
 
 # Data analysis & visualization
@@ -13,10 +12,3 @@ black[jupyter]
 numpy
 pandas
 scikit-learn
-
-# Backend
-fastapi
-uvicorn
-
-# Frontend
-streamlit

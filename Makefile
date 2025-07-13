@@ -1,119 +1,160 @@
 # Makefile for CRM Sales Opportunities Data Processing
 .DEFAULT_GOAL := default
-PYTHON_EXEC := python -B -m
-IMAGE_URI = $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(IMAGE_NAME)$(COLON)$(TAG)
-COLON = :
 
-## ===================
-## Available commands:
-## ===================
-## 
-## Global
-## ------
-## init:		Create your virtual environment
-## requirements:	Install or update Python dependencies.
-## clean:		Clean up temporary files and directories.
-## lint:		Run pylint.
-## tests:		Run tests.
-## 
-## Data:
-## ------
-## data_extract:	Get or update initial raw data.
-## 
-## Development:
-## ------
-## dev_api: 	Run the backend service.
-## dev_app: 	Run the frontend service.
-## docker_build: 	Build app.
-## docker_run: 	Run app.
-## docker_stop: 	Kill app.
-## 
-## Deployment:
-## ------
-## cloud_init: 	Initialize gcloud env.
-## cloud_build: 	Build the docker for production.
-## cloud_push:	Publish app to artifact repository.
-## cloud_deploy: 	Deploy app to production.
-
-help:
-	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
-
+###############################################################################
+# Global commands
+###############################################################################
 default:
-	make lint
-	make tests
+	@make lint
 
 init:
-	pyenv install $(PYTHON_VERSION)
-	pyenv virtualenv $(PYTHON_VERSION) $(PYTHON_VENV)
-	pyenv local $(PYTHON_VENV)
-	make requirements
+	-pyenv install $(PYTHON_VERSION)
+	-pyenv virtualenv $(PYTHON_VERSION) $(PYTHON_VENV)
+	-pyenv local $(PYTHON_VENV)
+	@pip install -U pip
+	@pip install -r requirements.txt
+	@$(MAKE) install_package
 
-requirements:
-	$(PYTHON_EXEC) pip install -U pip
-	$(PYTHON_EXEC) pip install -r requirements.txt
+install_package:
+	@pip uninstall -y $(PACKAGE_NAME) || :
+	@pip install -e .
 
 clean:
-	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
+	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
+	@find . -type f -name "*.py[co]" -delete
+	@find . -type d -name "__pycache__" -delete
+	@rm -fr **/__pycache__ **/*.pyc **/.ipynb_checkpoints *.egg-info/ .pytest_cache/
+	@rm -f **/.DS_Store **/*Zone.Identifier
 
 lint:
-	find . -iname "*.py" -not -path "./tests/*" | xargs -I {} pylint --output-format=colorized {}; true
-	$(PYTHON_EXEC) black .
+	@find . -iname "*.py" -not -path "./tests/*" | xargs -I {} pylint --output-format=colorized {}; true
+	@black .
 
-.PHONY: tests
-tests:
-	$(PYTHON_EXEC) pytest -v --color=yes
+###############################################################################
+# Docker process management commands
+###############################################################################
+check_ports:
+	@echo "Checking what's running on development ports:"
+	@lsof -i :$(API_PORT) || echo "Port $(API_PORT) is free"
+	@lsof -i :$(APP_PORT) || echo "Port $(APP_PORT) is free"
 
+kill_ports:
+	@echo "Killing processes on development ports:"
+	@lsof -ti :$(API_PORT) | xargs kill -9 || echo "No process on port $(API_PORT)"
+	@lsof -ti :$(APP_PORT) | xargs kill -9 || echo "No process on port $(APP_PORT)"
+
+ps_docker:
+	@echo "Running Docker containers:"
+	@docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+
+###############################################################################
 # Data-related commands
+###############################################################################
 data_extract:
-	mkdir -p data/raw
-	curl -L -o ./data/raw/$(RAW_DATA_ARCHIVE) $(RAW_DATA_URL)
-	unzip -u data/raw/$(RAW_DATA_ARCHIVE) -d data/raw
-	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
+	@mkdir -p data/raw
+	@curl -L -o ./data/raw/$(RAW_DATA_ARCHIVE) $(RAW_DATA_URL)
+	@unzip -u data/raw/$(RAW_DATA_ARCHIVE) -d data/raw
+	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
-# Dev commands
-dev_api:
-	$(PYTHON_EXEC) uvicorn api.run:app --reload --port 8000
+data_transform:
+	@echo "Work in progress"
 
-dev_app:
-	$(PYTHON_EXEC) streamlit run app/run.py
+###############################################################################
+# Backend-related commands
+###############################################################################
+api_dev:
+	@uvicorn api.run:app --reload --port $(API_PORT)
 
-# CI-related commands
+api_docker_build:
+	@$(MAKE) docker_build SERVICE=api TAG=$(API_TAG)
+
+api_docker_start:
+	@$(MAKE) docker_start SERVICE=api PORT=$(API_PORT) TAG=$(API_TAG)
+
+api_docker_stop:
+	@$(MAKE) docker_stop SERVICE=api
+
+###############################################################################
+# Frontend-related commands
+###############################################################################
+app_dev:
+	@streamlit run app/run.py
+
+app_docker_build:
+	@$(MAKE) docker_build SERVICE=app TAG=$(APP_TAG)
+
+app_docker_start:
+	@$(MAKE) docker_start SERVICE=app PORT=$(APP_PORT) TAG=$(API_TAG)
+
+app_docker_stop:
+	@$(MAKE) docker_stop SERVICE=app
+
+###############################################################################
+# Generic docker commands (to reduce duplication)
+###############################################################################
 docker_build:
-	docker build --tag=$(PROJECT):dev .
+	@docker build -f Dockerfile.$(SERVICE) --tag=$(PROJECT)-$(SERVICE):$(TAG) .
 
-docker_run:
-	docker run -it -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(PROJECT):dev
+docker_start:
+	docker run -it -d --name=$(PROJECT)-$(SERVICE) -p $(PORT):$(PORT) -e PORT=$(PORT) $(PROJECT)-$(SERVICE):$(TAG)
 
 docker_stop:
-	docker stop $(PROJECT) && docker rm $(PROJECT)
+	@docker stop $(PROJECT)-$(SERVICE) && docker rm $(PROJECT)-$(SERVICE)
 
+###############################################################################
 # Production build commands
+###############################################################################
 cloud_init:
-	gcloud auth configure-docker $(REGION)-docker.pkg.dev
-	gcloud projects add-iam-policy-binding $(PROJECT) \
+	@gcloud auth configure-docker $(REGION)-docker.pkg.dev
+	@gcloud projects add-iam-policy-binding $(PROJECT) \
 		--member="user:$(EMAIL)" \
 		--role="roles/artifactregistry.writer"
-	gcloud artifacts repositories create $(ARTIFACTSREPO) \
+	@gcloud artifacts repositories create $(ARTIFACTSREPO) \
 		--repository-format=docker \
 		--location=$(REGION) \
 		--description="$(PROJECT)"
 
+# Generic cloud build command with service parameter
 cloud_build:
-	@echo "Building image: $(IMAGE_URI)"
-	cp requirements.txt requirements-dev.txt
-	cp requirements-prod.txt requirements.txt
-	docker build --platform linux/amd64 --tag=$(IMAGE_URI) .
-	mv requirements-dev.txt requirements.txt
+	@echo "Building $(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
+	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) .
 
+# Generic cloud push command with service parameter
 cloud_push:
-	@echo "Pushing image: $(IMAGE_URI)"
-	docker push $(IMAGE_URI)
+	@echo "Pushing $(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
+	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)
 
+# Generic cloud deploy command with service parameter
 cloud_deploy:
-	@echo "Deploying with GCloud Run"
-	gcloud run deploy \
-		--image $(IMAGE_URI) \
+	@echo "Deploying $(SERVICE) with GCloud Run"
+	@gcloud run deploy $(PROJECT)-$(SERVICE) \
+		--image $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) \
 		--memory $(MEMORY) \
 		--region $(REGION)
+
+cloud_pipeline_api:
+	@echo "Running full pipeline for API..."
+	@$(MAKE) cloud_build SERVICE=api
+	@$(MAKE) cloud_push SERVICE=api
+	@$(MAKE) cloud_deploy SERVICE=api
+
+cloud_pipeline_app:
+	@echo "Running full pipeline for APP..."
+	@$(MAKE) cloud_build SERVICE=app
+	@$(MAKE) cloud_push SERVICE=app
+	@$(MAKE) cloud_deploy SERVICE=app
+
+###############################################################################
+# Test commands
+###############################################################################
+test:
+	@pytest -v
+
+test_api:
+	@pytest api/tests/test_api.py -v
+
+test_app:
+	@pytest app/tests/test_app.py -v
+
+test_data:
+	@pytest tests/test_data.py -v
