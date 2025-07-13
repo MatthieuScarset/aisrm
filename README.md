@@ -5,16 +5,12 @@ _The best sales representative matching tool of all time!_
 This project is an MVP for an AI-powered app that recommends the best sales representative for a given client and product.  
 It uses real CRM data and machine learning to help sales teams match opportunities with the right agent, every time.
 
----
-
 ## 🚀 Features
 
 - **Predicts the best sales agent** for a given client-product combination
 - **Top 3 recommendations** with probability/confidence
 - **Explainability:** Shows why an agent is recommended (past deals, similar features)
 - **Streamlit web app:** Easy-to-use interface for demo and experimentation
-
----
 
 ## ⚡️ Getting Started
 
@@ -41,84 +37,42 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
         pyenv local aisrm-env
         ```
 
-3. **Install dependencies**
+    - Install dependencies
 
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4. **Download and prepare the data**
-
-    - Download the [CRM Sales Opportunities dataset](https://www.kaggle.com/datasets/innocentmfa/crm-sales-opportunities) from Kaggle.
-    - Unzip it to the `data/raw/crm-sales-opportunities/` folder so it contains:
-
-        - `accounts.csv`
-        - `products.csv`
-        - `sales_pipeline.csv`
-        - `sales_teams.csv`
-        - `data_dictionary.csv`
-
-    - Alternatively, download and unzip as follow:: 
         ```bash
-        mkdir -p data/raw/crm-sales-opportunities
-        curl -L -o ./data/raw/crm-sales-opportunities.zip\
-            https://www.kaggle.com/api/v1/datasets/download/innocentmfa/crm-sales-opportunities
-        unzip -u data/raw/crm-sales-opportunities.zip -d data/raw/crm-sales-opportunities 
+        make requirements
         ```
 
+## 👨‍💻 Develop
 
-5. **Train the model**
+1. **Prepare data**
 
-    ```bash
-    python -m scripts.train_model
-    ```
+    - Get the raw data
 
-6. **Launch the Streamlit app**
+        ```bash
+        make data_extract
+        ```
 
-    ```bash
-    streamlit run app.py
-    ```
+    - Clean and preprocess pipeline
 
-    - The web app will open in your browser. Select a client and product to see the top recommended sales agents and explanations.
+        ```bash
+        make data_transform
+        ```
 
----
+2. **Build model**
 
-## 🗂️ Project Structure
+    - To be defined
 
-```text
-aisrm/
-├── data/
-│   └── raw/
-│       └── crm-sales-opportunities/
-│           ├── accounts.csv
-│           ├── products.csv
-│           ├── sales_pipeline.csv
-│           ├── sales_teams.csv
-│           └── data_dictionary.csv
-├── models/
-├── notebooks/
-├── scripts/
-│   ├── load_data.py
-│   ├── train_model.py
-│   └── predict_agent.py
-├── app.py
-├── requirements.txt
-└── README.md
+        ```bash
+        make model_train...etc
+        ```
 
+3. **Etc...**
 
-## 😃 How It Works
+## 🏗️ Deploy
 
-- Loads and merges CRM data (clients, products, sales, teams)
-- Trains a machine learning model (RandomForest) to predict the best sales agent
-- Provides an interactive UI for predictions and explanations
+1. **To do**
 
 ---
 
-## 🤝 Collaboration
-
-- All code is currently in the **MVP / draft phase** — feedback and contributions welcome!
-- Please open a Pull Request for any changes
-- See TODOs in the code and [Issues] tab for next steps
-
----
 Made with ❤️ by the AISRM team

@@ -1,6 +1,12 @@
+# Local & temporary files.
 .venv/
 __pycache__/
 *.pyc
 *.zip
-models/
+.pytest_cache/
+.ipynb_checkpoints/
+.env
+
+# Data files.
 data/
+models/

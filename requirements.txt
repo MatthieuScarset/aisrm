@@ -1,5 +1,14 @@
+# Testing
+pytest
+pylint
+ipdb
+jupyterlab
+notebook
+
+# Building
+numpy
+matplotlib
+seaborn
 pandas
 scikit-learn
-joblib
 streamlit
-kaggle
