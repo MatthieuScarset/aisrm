@@ -1,6 +1,8 @@
 # Makefile for CRM Sales Opportunities Data Processing
 .DEFAULT_GOAL := default
-PYTHON_EXEC = python -B -m
+PYTHON_EXEC := python -B -m
+IMAGE_URI = $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(IMAGE_NAME)$(COLON)$(TAG)
+COLON = :
 
 ## ===================
 ## Available commands:
@@ -87,15 +89,26 @@ docker_stop:
 	docker stop $(PROJECT) && docker rm $(PROJECT)
 
 # Production build commands
+cloud_init:
+	gcloud auth configure-docker $(REGION)-docker.pkg.dev
+	gcloud projects add-iam-policy-binding $(PROJECT) \
+		--member="user:$(EMAIL)" \
+		--role="roles/artifactregistry.writer"
+	gcloud artifacts repositories create $(ARTIFACTSREPO) \
+		--repository-format=docker \
+		--location=$(REGION) \
+		--description="$(PROJECT)"
+
 docker_build_prod:
-	IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT}/${ARTIFACTSREPO}/${IMAGE_NAME}:${TAG}
+	@echo "Building image: $(IMAGE_URI)"
 	cp requirements.txt requirements-dev.txt
 	cp requirements-prod.txt requirements.txt
-	docker build --platform linux/amd64 --build-arg --tag=$(IMAGE_URI) .
+	docker build --platform linux/amd64 --tag=$(IMAGE_URI) .
 	mv requirements-dev.txt requirements.txt
 
 docker_push_prod:
-	@echo "Work in progress"
+	@echo "Pushing image: $(IMAGE_URI)"
+	docker push $(IMAGE_URI)
 
 deploy_to_cloud:
 	@echo "Work in progress"
