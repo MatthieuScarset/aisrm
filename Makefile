@@ -16,7 +16,9 @@ RAW_DATA_ARCHIVE = crm-sales-opportunities.zip
 help:
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
-default: pylint pytest
+default: tests
+
+tests: pylint pytest
 
 requirements:
 	$(PMX) pip install -U pip

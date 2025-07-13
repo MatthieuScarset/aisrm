@@ -1,0 +1,30 @@
+name: AISRM CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-and-run-pytest:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1) Checkout branch that triggered the event.
+    - uses: actions/checkout@v3
+
+    # 2) Install Python.
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+
+    # 3) Install dependencies.
+    - name: Install dependencies
+      run: make requirements
+    
+    # 3) Run tests.
+    - name: Run tests
+      run: make tests
