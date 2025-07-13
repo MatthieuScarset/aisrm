@@ -37,6 +37,7 @@ data_extract:
 
 pylint:
 	find . -iname "*.py" -not -path "./tests/*" | xargs -n1 -I {}  pylint --output-format=colorized {}; true
+	$(PMX) black .
 
 pytest:
-	$(PYMODEXEC) pytest -v --color=yes
+	$(PMX) pytest -v --color=yes

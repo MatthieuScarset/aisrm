@@ -4,8 +4,10 @@ pylint
 ipdb
 jupyterlab
 notebook
+black[jupyter]
 
 # Building
+black
 numpy
 matplotlib
 seaborn
