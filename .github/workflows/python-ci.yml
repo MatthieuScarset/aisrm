@@ -7,11 +7,14 @@ on:
     branches: [ master, main ]
 
 jobs:
-  code-check:
+  build-check-and-tests:
 
     runs-on: ubuntu-latest
     environment: dev
     
+    env:
+      PROJECT: ${{ vars.PROJECT }}
+
     steps:
     # Checkout branch that triggered the event.
     - uses: actions/checkout@v3
@@ -29,27 +32,18 @@ jobs:
     # Run linters.
     - name: Code check
       run: make lint
-    
-  build-container:
 
-    runs-on: ubuntu-latest
-    needs: code-check
-    environment: dev
-    
-    env:
-      PROJECT: ${{ vars.PROJECT }}
-
-    steps:
-    - uses: actions/checkout@v3
-
+    # Build container
     - name: Build Docker image
       run: make docker_build
-
+    
     - name: Run Docker container
       run: make docker_run
-
+    
+    # Run tests.
     - name: Run tests
       run: make tests
 
+    # Kill container now
     - name: Stop Docker Container
       run: make docker_stop
