@@ -24,15 +24,16 @@ COLON = :
 ## ------
 ## dev_api: 	Run the backend service.
 ## dev_app: 	Run the frontend service.
-## 
-## Deployment:
-## ------
 ## docker_build: 	Build app.
 ## docker_run: 	Run app.
 ## docker_stop: 	Kill app.
-## docker_build_prod: 	Build app for production.
-## docker_push_prod: 	Publish app to artifact repository.
-## deploy_to_cloud: 	Deploy app to production.
+## 
+## Deployment:
+## ------
+## cloud_init: 	Initialize gcloud env.
+## cloud_build: 	Build the docker for production.
+## cloud_push:	Publish app to artifact repository.
+## cloud_deploy: 	Deploy app to production.
 
 help:
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
@@ -99,16 +100,20 @@ cloud_init:
 		--location=$(REGION) \
 		--description="$(PROJECT)"
 
-docker_build_prod:
+cloud_build:
 	@echo "Building image: $(IMAGE_URI)"
 	cp requirements.txt requirements-dev.txt
 	cp requirements-prod.txt requirements.txt
 	docker build --platform linux/amd64 --tag=$(IMAGE_URI) .
 	mv requirements-dev.txt requirements.txt
 
-docker_push_prod:
+cloud_push:
 	@echo "Pushing image: $(IMAGE_URI)"
 	docker push $(IMAGE_URI)
 
-deploy_to_cloud:
-	@echo "Work in progress"
+cloud_deploy:
+	@echo "Deploying with GCloud Run"
+	gcloud run deploy \
+		--image $(IMAGE_URI) \
+		--memory $(MEMORY) \
+		--region $(REGION)
