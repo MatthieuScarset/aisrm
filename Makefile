@@ -58,6 +58,7 @@ lint:
 	find . -iname "*.py" -not -path "./tests/*" | xargs -I {} pylint --output-format=colorized {}; true
 	$(PYTHON_EXEC) black .
 
+.PHONY: tests
 tests:
 	$(PYTHON_EXEC) pytest -v --color=yes
 
