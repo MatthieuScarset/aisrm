@@ -7,24 +7,36 @@ on:
     branches: [ master, main ]
 
 jobs:
-  build-and-run-pytest:
+  build-test-and-run:
 
     runs-on: ubuntu-latest
 
     steps:
-    # 1) Checkout branch that triggered the event.
+    # Checkout branch that triggered the event.
     - uses: actions/checkout@v3
 
-    # 2) Install Python.
+    # Install Python.
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
         python-version: "3.10"
 
-    # 3) Install dependencies.
+    # Install dependencies.
     - name: Install dependencies
       run: make requirements
     
-    # 3) Run tests.
+    # Run tests.
     - name: Run tests
       run: make tests
+
+    # Build test image.
+    - name: Build test Docker image
+      run: docker build -f Dockerfile -t api-test .
+
+    # Run test container.
+    - name: Run testing Container
+      run: docker run -d -e PORT=8000 --name api-test-container -p 8080:8000 api-test
+
+    # Stop and remove container.
+    - name: Stop API Container
+      run: docker stop api-test-container && docker rm api-test-container

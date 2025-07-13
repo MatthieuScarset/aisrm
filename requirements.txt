@@ -13,4 +13,10 @@ matplotlib
 seaborn
 pandas
 scikit-learn
+
+# API-related
+fastapi
+uvicorn
+
+# Frontend
 streamlit
