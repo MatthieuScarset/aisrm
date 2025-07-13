@@ -51,20 +51,13 @@ data_extract:
 
 # CI-related commands
 docker_build:
-ifeq ($(ENV),prod)
-	docker build --platform linux/amd64 --build-arg ENV=$(ENV) --tag=$(IMAGE_URI) .
-else
 	docker build --build-arg ENV=$(ENV) --tag=$(PROJECT):dev .
-endif
+
+docker_build_prod:
+	docker build --platform linux/amd64 --build-arg ENV=$(ENV) --tag=$(IMAGE_URI) .
 
 docker_run:
-ifeq ($(ENV),prod)
-	docker run -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(IMAGE_URI)
-else
-	docker run -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(PROJECT):dev
-	@echo "Open http://localhost:8080"
-	@echo "Stop with: make docker_stop"
-endif
+	docker run -it -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(PROJECT):dev
 
 docker_stop:
 	docker stop $(PROJECT) && docker rm $(PROJECT)
