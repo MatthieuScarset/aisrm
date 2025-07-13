@@ -5,21 +5,26 @@ PYTHON_EXEC = python -B -m
 ## ===================
 ## Available commands:
 ## ===================
-## init:	Create your virtual environment
+## init:		Create your virtual environment
 ## requirements:	Install or update Python dependencies.
 ## clean:		Clean up temporary files and directories.
 ## lint:		Run pylint.
 ## tests:		Run tests.
+##
+## data_extract:	Get or update initial raw data.
+##
+## dev_api: 	Run the backend service.
+## dev_app: 	Run the frontend service.
 ## docker_build: 	Build app.
 ## docker_run: 	Run app.
 ## docker_stop: 	Kill app.
-## data_extract:	Get or update initial raw data.
 
 help:
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
-default: _default
-_default: pylint pytest
+default:
+	make lint
+	make tests
 
 init:
 	pyenv install $(PYTHON_VERSION)
@@ -28,7 +33,7 @@ init:
 
 requirements:
 	$(PYTHON_EXEC) pip install -U pip
-	$(PYTHON_EXEC) pip install -r requirements-$(ENV).txt
+	$(PYTHON_EXEC) pip install -r requirements.txt
 
 clean:
 	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
@@ -49,15 +54,28 @@ data_extract:
 	unzip -u data/raw/$(RAW_DATA_ARCHIVE) -d data/raw
 	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
+# Dev commands
+dev_api:
+	$(PYTHON_EXEC) uvicorn api.run:app --reload --port 8000
+
+dev_app:
+	$(PYTHON_EXEC) streamlit run app/run.py
+
 # CI-related commands
 docker_build:
-	docker build --build-arg ENV=$(ENV) --tag=$(PROJECT):dev .
-
-docker_build_prod:
-	docker build --platform linux/amd64 --build-arg ENV=$(ENV) --tag=$(IMAGE_URI) .
+	docker build --build-arg --tag=$(PROJECT):dev .
 
 docker_run:
 	docker run -it -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(PROJECT):dev
 
 docker_stop:
 	docker stop $(PROJECT) && docker rm $(PROJECT)
+
+# Production build commands
+docker_build_prod:
+	IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT}/${ARTIFACTSREPO}/${IMAGE_NAME}:${TAG}
+	cp requirements.txt requirements-dev.txt
+	cp requirements-prod.txt requirements.txt
+	docker build --platform linux/amd64 --build-arg --tag=$(IMAGE_URI) .
+	mv requirements-dev.txt requirements.txt
+

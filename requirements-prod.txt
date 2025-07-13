@@ -1,5 +1,8 @@
-# Dependencies
--r requirements-test.txt
+# Testing
+pytest
+pylint
+ipdb
+black
 
 # Backend
 fastapi

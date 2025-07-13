@@ -1,18 +1,10 @@
 FROM python:3.10-slim
 
-# Build argument for environment
-ARG ENV=dev
+# Install Python dependencies.
+COPY requirements.txt .
 
-# Copy requirements files first
-COPY requirements-*.txt ./
-
-# Select the appropriate requirements file based on ENV
-RUN cp requirements-${ENV}.txt requirements.txt
-
-# Install Python dependencies and clean up in one layer
 RUN pip install -U pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip cache purge
+    && pip install -r requirements.txt
 
 # Copy backend application folder
 COPY api api

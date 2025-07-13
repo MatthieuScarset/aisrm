@@ -1,5 +1,8 @@
-# Dependencies
--r requirements-prod.txt
+# Testing
+pytest
+pylint
+ipdb
+black
 
 # Data analysis & visualization
 matplotlib
@@ -10,3 +13,10 @@ black[jupyter]
 numpy
 pandas
 scikit-learn
+
+# Backend
+fastapi
+uvicorn
+
+# Frontend
+streamlit

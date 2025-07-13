@@ -1,5 +1,0 @@
-# Testing
-pytest
-pylint
-ipdb
-black

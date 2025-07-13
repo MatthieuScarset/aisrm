@@ -12,9 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     
-    env:
-      ENV: ${{ vars.ENV }}
-    
     steps:
     # Checkout branch that triggered the event.
     - uses: actions/checkout@v3
@@ -40,7 +37,6 @@ jobs:
     environment: dev
     
     env:
-      ENV: ${{ vars.ENV }}
       PROJECT: ${{ vars.PROJECT }}
 
     steps:
