@@ -10,10 +10,6 @@ jobs:
   code-check:
 
     runs-on: ubuntu-latest
-    
-    env:
-      IMAGE_URI: gh:dev
-      BUILD_ENV: prod
 
     steps:
     # Checkout branch that triggered the event.
@@ -37,11 +33,6 @@ jobs:
 
     runs-on: ubuntu-latest
     needs: code-check
-    
-    env:
-      IMAGE_URI: gh:dev
-      BUILD_ENV: prod
-      PROJECT: aisrm-lewagon
 
     steps:
     - uses: actions/checkout@v3

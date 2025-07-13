@@ -28,7 +28,7 @@ init:
 
 requirements:
 	$(PYTHON_EXEC) pip install -U pip
-	$(PYTHON_EXEC) pip install -r requirements-$(BUILD_ENV).txt
+	$(PYTHON_EXEC) pip install -r requirements-$(ENV).txt
 
 clean:
 	rm -rf data/raw/$(RAW_DATA_ARCHIVE)
@@ -51,10 +51,20 @@ data_extract:
 
 # CI-related commands
 docker_build:
-	docker build --build-arg BUILD_ENV=$(BUILD_ENV) --tag=$(IMAGE_URI) .
+ifeq ($(ENV),prod)
+	docker build --platform linux/amd64 --build-arg ENV=$(ENV) --tag=$(IMAGE_URI) .
+else
+	docker build --build-arg ENV=$(ENV) --tag=$(PROJECT):dev .
+endif
 
 docker_run:
+ifeq ($(ENV),prod)
 	docker run -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(IMAGE_URI)
+else
+	docker run -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(PROJECT):dev
+	@echo "Open http://localhost:8080"
+	@echo "Stop with: make docker_stop"
+endif
 
 docker_stop:
 	docker stop $(PROJECT) && docker rm $(PROJECT)
