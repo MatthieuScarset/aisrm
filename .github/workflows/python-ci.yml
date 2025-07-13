@@ -7,7 +7,7 @@ on:
     branches: [ master, main ]
 
 jobs:
-  build-test:
+  code-check:
 
     runs-on: ubuntu-latest
     
@@ -32,19 +32,27 @@ jobs:
     # Run linters.
     - name: Code check
       run: make lint
+    
+  build-container:
 
-    # Build Docker image.
+    runs-on: ubuntu-latest
+    
+    env:
+      IMAGE_URI: gh:dev
+      BUILD_ENV: prod
+      PROJECT: aisrm-lewagon
+
+    steps:
+    - uses: actions/checkout@v3
+
     - name: Build Docker image
       run: make docker_build
 
-    # Run Docker container.
     - name: Run Docker container
       run: make docker_run
 
-    # Run tests.
     - name: Run tests
       run: make tests
 
-    # Stop and remove container.
     - name: Stop API Container
       run: make docker_stop

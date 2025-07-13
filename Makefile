@@ -54,7 +54,7 @@ docker_build:
 	docker build --build-arg BUILD_ENV=$(BUILD_ENV) --tag=$(IMAGE_URI) .
 
 docker_run:
-	docker run -it --name=$(PROJECT) -e  PORT=8000 -p 8080:8000 $(IMAGE_URI)
+	docker run -d --name=$(PROJECT) -e PORT=8000 -p 8080:8000 $(IMAGE_URI)
 
 docker_stop:
 	docker stop $(PROJECT) && docker rm $(PROJECT)
