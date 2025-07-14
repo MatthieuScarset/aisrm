@@ -116,23 +116,25 @@ cloud_init:
 
 # Generic cloud build command with service parameter
 cloud_build:
-	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) .
+	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) .
 
 # Generic cloud push command with service parameter
 cloud_push:
-	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)
+	@docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)
 
 # Generic cloud deploy command with service parameter
 cloud_deploy:
 	@echo "Deploying $(SERVICE) with GCloud Run"
 	@gcloud run deploy $(PROJECT)-$(SERVICE) \
-		--image $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) \
+		--image $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) \
 		--memory $(MEMORY) \
-		--region $(REGION)
+		--region $(REGION) \
+		--platform managed \
+		--allow-unauthenticated
 
 cloud_pipeline:
 	@echo "Running full pipeline..."
-	@echo "$(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
+	@echo "$(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
 	@$(MAKE) cloud_build SERVICE=$(SERVICE) TAG=$(TAG)
 	@$(MAKE) cloud_push SERVICE=$(SERVICE) TAG=$(TAG)
 	@$(MAKE) cloud_deploy SERVICE=$(SERVICE) TAG=$(TAG) MEMORY=$(MEMORY)

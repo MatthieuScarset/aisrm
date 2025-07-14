@@ -12,6 +12,7 @@ jobs:
     
     env:
       PROJECT: ${{ vars.PROJECT }}
+      PROJECT_ID: ${{ vars.PROJECT_ID }}
       REGION: ${{ vars.REGION }}
       ARTIFACTSREPO: ${{ vars.ARTIFACTSREPO }}
       MEMORY: ${{ vars.MEMORY }}
