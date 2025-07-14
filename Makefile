@@ -106,43 +106,42 @@ docker_stop:
 ###############################################################################
 cloud_init:
 	@gcloud auth configure-docker $(REGION)-docker.pkg.dev
-	@gcloud projects add-iam-policy-binding $(PROJECT) \
+	@gcloud projects add-iam-policy-binding $(PROJECT_ID) \
 		--member="user:$(EMAIL)" \
 		--role="roles/artifactregistry.writer"
 	@gcloud artifacts repositories create $(ARTIFACTSREPO) \
 		--repository-format=docker \
 		--location=$(REGION) \
-		--description="$(PROJECT)"
+		--description="$(PROJECT) Artifact Registry"
 
 # Generic cloud build command with service parameter
 cloud_build:
-	@echo "Building $(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
-	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) .
+	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) .
 
 # Generic cloud push command with service parameter
 cloud_push:
-	@echo "Pushing $(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
-	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)
+	@docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)
 
 # Generic cloud deploy command with service parameter
 cloud_deploy:
 	@echo "Deploying $(SERVICE) with GCloud Run"
 	@gcloud run deploy $(PROJECT)-$(SERVICE) \
-		--image $(REGION)-docker.pkg.dev/$(PROJECT)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) \
+		--image $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) \
 		--memory $(MEMORY) \
 		--region $(REGION)
 
+cloud_pipeline:
+	@echo "Running full pipeline..."
+	@echo "$(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
+	@$(MAKE) cloud_build SERVICE=$(SERVICE) TAG=$(TAG)
+	@$(MAKE) cloud_push SERVICE=$(SERVICE) TAG=$(TAG)
+	@$(MAKE) cloud_deploy SERVICE=$(SERVICE) TAG=$(TAG) MEMORY=$(MEMORY)
+
 cloud_pipeline_api:
-	@echo "Running full pipeline for API..."
-	@$(MAKE) cloud_build SERVICE=api
-	@$(MAKE) cloud_push SERVICE=api
-	@$(MAKE) cloud_deploy SERVICE=api
+	@$(MAKE) cloud_pipeline SERVICE=api TAG=$(API_TAG) MEMORY=$(API_MEMORY)
 
 cloud_pipeline_app:
-	@echo "Running full pipeline for APP..."
-	@$(MAKE) cloud_build SERVICE=app
-	@$(MAKE) cloud_push SERVICE=app
-	@$(MAKE) cloud_deploy SERVICE=app
+	@$(MAKE) cloud_pipeline SERVICE=app TAG=$(API_TAG) MEMORY=$(APP_MEMORY)
 
 ###############################################################################
 # Test commands
