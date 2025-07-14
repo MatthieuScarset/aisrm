@@ -1,9 +1,9 @@
-name: Deploy to Production
+name: Deploy frontend to Production
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'app*'
 
 jobs:
   deploy:
@@ -29,22 +29,10 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
 
-    # First run only. 
-    #- name: Configure Docker for Artifact Registry
-    #  run: make cloud_init
-
-    - name: Build and push API
-      run: |
-        make cloud_build SERVICE=api TAG=${{ github.ref_name }}
-        make cloud_push SERVICE=api TAG=${{ github.ref_name }}
-
     - name: Build and push APP
       run: |
         make cloud_build SERVICE=app TAG=${{ github.ref_name }}
         make cloud_push SERVICE=app TAG=${{ github.ref_name }}
-
-    - name: Deploy API to Cloud Run
-      run: make cloud_deploy SERVICE=api MEMORY=${{ env.MEMORY }} TAG=${{ github.ref_name }}
 
     - name: Deploy APP to Cloud Run
       run: make cloud_deploy SERVICE=app MEMORY=${{ env.MEMORY }} TAG=${{ github.ref_name }}
