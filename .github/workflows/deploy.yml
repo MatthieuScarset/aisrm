@@ -21,13 +21,20 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Extract service name from tag
-      id: get_service_name
+    - name: Prepare service info
+      id: prepare
       run: |
         TAG_NAME="${{ github.ref_name }}"
         SERVICE=$(echo $TAG_NAME | cut -d'-' -f2)
         echo "SERVICE=$SERVICE" >> $GITHUB_ENV
         echo "Extracted service: $SERVICE"
+        
+        if [ "$SERVICE" = "api" ]; then
+          echo "PORT=${{ vars.API_PORT }}" >> $GITHUB_ENV
+        elif [ "$SERVICE" = "app" ]; then
+          echo "PORT=${{ vars.APP_PORT }}" >> $GITHUB_ENV
+        fi
+        echo "Service PORT: $PORT"
 
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
@@ -46,4 +53,4 @@ jobs:
         make cloud_push SERVICE=${{ env.SERVICE }} TAG=${{ github.ref_name }}
 
     - name: Deploy service to Cloud Run
-      run: make cloud_deploy SERVICE=${{ env.SERVICE }} MEMORY=${{ env.MEMORY }} TAG=${{ github.ref_name }}
+      run: make cloud_deploy SERVICE=${{ env.SERVICE }} MEMORY=${{ env.MEMORY }} TAG=${{ github.ref_name }} PORT=${{ env.PORT }}

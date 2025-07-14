@@ -9,4 +9,4 @@ RUN pip install -U pip \
 
 COPY app/ ./app/
 
-CMD ["streamlit", "run", "app/run.py"]
+CMD ["sh", "-c", "streamlit run app/run.py --server.port=${PORT} --server.address=0.0.0.0"]

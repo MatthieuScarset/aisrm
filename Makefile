@@ -130,20 +130,22 @@ cloud_deploy:
 		--memory $(MEMORY) \
 		--region $(REGION) \
 		--platform managed \
-		--allow-unauthenticated
+		--allow-unauthenticated \
+		--port $(PORT) \
+		--set-env-vars PORT=$(PORT)
 
 cloud_pipeline:
 	@echo "Running full pipeline..."
 	@echo "$(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
 	@$(MAKE) cloud_build SERVICE=$(SERVICE) TAG=$(TAG)
 	@$(MAKE) cloud_push SERVICE=$(SERVICE) TAG=$(TAG)
-	@$(MAKE) cloud_deploy SERVICE=$(SERVICE) TAG=$(TAG) MEMORY=$(MEMORY)
+	@$(MAKE) cloud_deploy SERVICE=$(SERVICE) TAG=$(TAG) MEMORY=$(MEMORY) PORT=$(PORT)
 
 cloud_pipeline_api:
-	@$(MAKE) cloud_pipeline SERVICE=api TAG=$(API_TAG) MEMORY=$(API_MEMORY)
+	@$(MAKE) cloud_pipeline SERVICE=api TAG=$(API_TAG) MEMORY=$(API_MEMORY) PORT=$(API_PORT)
 
 cloud_pipeline_app:
-	@$(MAKE) cloud_pipeline SERVICE=app TAG=$(API_TAG) MEMORY=$(APP_MEMORY)
+	@$(MAKE) cloud_pipeline SERVICE=app TAG=$(APP_TAG) MEMORY=$(APP_MEMORY) PORT=$(APP_PORT)
 
 ###############################################################################
 # Test commands
