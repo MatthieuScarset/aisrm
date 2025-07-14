@@ -21,6 +21,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Debug variables
+      run: |
+        echo "Available variables:"
+        echo "All vars context: ${{ toJSON(vars) }}"
+        echo "All env context: ${{ toJSON(env) }}"
+        echo "All github context: ${{ toJSON(github) }}"
+
     - name: Prepare service info
       id: prepare
       run: |
@@ -29,6 +36,7 @@ jobs:
         echo "SERVICE=$SERVICE" >> $GITHUB_ENV
         echo "Extracted service: $SERVICE"
         
+        # Set port based on service using env vars
         if [ "$SERVICE" = "api" ]; then
           echo "PORT=${{ vars.API_PORT }}" >> $GITHUB_ENV
         elif [ "$SERVICE" = "app" ]; then

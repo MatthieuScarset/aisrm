@@ -131,8 +131,7 @@ cloud_deploy:
 		--region $(REGION) \
 		--platform managed \
 		--allow-unauthenticated \
-		--port $(PORT) \
-		--set-env-vars PORT=$(PORT)
+		--port $(PORT)
 
 cloud_pipeline:
 	@echo "Running full pipeline..."
