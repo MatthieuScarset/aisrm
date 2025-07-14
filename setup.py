@@ -8,10 +8,11 @@ requirements = [x.strip() for x in content if "git+" not in x]
 
 with open(".env", encoding="utf-8") as f:
     content = f.readlines()
-version = [x.split("=")[-1] for x in content if "TAG=" in x][0]
+name = [x.split("=")[-1].strip() for x in content if "PACKAGE_NAME=" in x][0]
+version = [x.split("=")[-1].strip() for x in content if "PACKAGE_VERSION=" in x][0]
 
 setup(
-    name="aisrm",
+    name=name,
     version=version,
     install_requires=requirements,
     packages=find_packages(),

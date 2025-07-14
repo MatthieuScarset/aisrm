@@ -1,0 +1,83 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    environment: dev
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: pip install pylint black
+
+    - name: Lint
+      run: make lint
+
+  build-api:
+    needs: lint
+    runs-on: ubuntu-latest
+    environment: dev
+    
+    env:
+      PROJECT: aisrm
+      API_TAG: dev
+      API_PORT: 8500
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: pip install pytest
+
+    - name: Build API Docker image
+      run: make docker_build SERVICE=api TAG=${{ env.API_TAG }}
+    
+    - name: Run API Docker container
+      run: make docker_start SERVICE=api PORT=${{ env.API_PORT }} TAG=${{ env.API_TAG }}
+    
+    - name: Test API container
+      run: make test_api
+
+    - name: Stop API Docker Container
+      run: make docker_stop SERVICE=api
+
+  build-app:
+    needs: lint
+    runs-on: ubuntu-latest
+    environment: dev
+    
+    env:
+      PROJECT: aisrm
+      APP_TAG: dev
+      APP_PORT: 8501
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: pip install pytest
+
+    - name: Build APP Docker image
+      run: make docker_build SERVICE=app TAG=${{ env.APP_TAG }}
+    
+    - name: Run APP Docker container
+      run: make docker_start SERVICE=app PORT=${{ env.APP_PORT }} TAG=${{ env.APP_TAG }}
+    
+    - name: Test APP container
+      run: make test_app
+
+    - name: Stop APP Docker Container
+      run: make docker_stop SERVICE=app
+

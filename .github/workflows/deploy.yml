@@ -1,0 +1,64 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'release-*-*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    
+    env:
+      PROJECT: ${{ vars.PROJECT }}
+      PROJECT_ID: ${{ vars.PROJECT_ID }}
+      REGION: ${{ vars.REGION }}
+      ARTIFACTSREPO: ${{ vars.ARTIFACTSREPO }}
+      MEMORY: ${{ vars.MEMORY }}
+      TAG: ${{ github.ref_name }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Debug variables
+      run: |
+        echo "Available variables:"
+        echo "All vars context: ${{ toJSON(vars) }}"
+        echo "All env context: ${{ toJSON(env) }}"
+        echo "All github context: ${{ toJSON(github) }}"
+
+    - name: Prepare service info
+      id: prepare
+      run: |
+        TAG_NAME="${{ github.ref_name }}"
+        SERVICE=$(echo $TAG_NAME | cut -d'-' -f2)
+        echo "SERVICE=$SERVICE" >> $GITHUB_ENV
+        echo "Extracted service: $SERVICE"
+        
+        # Set port based on service using env vars
+        if [ "$SERVICE" = "api" ]; then
+          echo "PORT=${{ vars.API_PORT }}" >> $GITHUB_ENV
+        elif [ "$SERVICE" = "app" ]; then
+          echo "PORT=${{ vars.APP_PORT }}" >> $GITHUB_ENV
+        fi
+        echo "Service PORT: $PORT"
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+
+    - name: Configure Docker for Artifact Registry
+      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+    - name: Build and push service
+      run: |
+        make cloud_build SERVICE=${{ env.SERVICE }} TAG=${{ github.ref_name }}
+        make cloud_push SERVICE=${{ env.SERVICE }} TAG=${{ github.ref_name }}
+
+    - name: Deploy service to Cloud Run
+      run: make cloud_deploy SERVICE=${{ env.SERVICE }} MEMORY=${{ env.MEMORY }} TAG=${{ github.ref_name }} PORT=${{ env.PORT }}
