@@ -50,10 +50,10 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
         make data_extract
         ```
 
-    - Clean and preprocess pipeline
+    - Clean and compiled raw datasets to generated the processed dataset file:
 
         ```bash
-        make data_transform
+        make data_preprocess
         ```
 
 2. **Build model**
