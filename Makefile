@@ -1,92 +1,94 @@
 # Makefile for CRM Sales Opportunities Data Processing
 .DEFAULT_GOAL := default
 
-###############################################################################
-# Global commands
-###############################################################################
+## #############################################################################
+## # Global commands
+## #############################################################################
 default:
 	@make lint
 
-init:
+help:	## Show this help.
+	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
+
+init:	## Create virtual environment (Pyenv)
 	-pyenv install $(PYTHON_VERSION)
 	-pyenv virtualenv $(PYTHON_VERSION) $(PYTHON_VENV)
 	-pyenv local $(PYTHON_VENV)
 	@pip install -U pip
 	@pip install -r requirements.txt
-	@$(MAKE) install_package
 
-install_package:
+install_package:	## Install this package in editable mode.
 	@pip uninstall -y $(PACKAGE_NAME) || :
 	@pip install -e .
 
-clean:
+clean:	## Delete temporary files, cache, and build artifacts
 	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 	@find . -type f -name "*.py[co]" -delete
 	@find . -type d -name "__pycache__" -delete
 	@rm -fr **/__pycache__ **/*.pyc **/.ipynb_checkpoints *.egg-info/ .pytest_cache/
 	@rm -f **/.DS_Store **/*Zone.Identifier
 
-lint:
+lint:	## Run pylint and black code formatting on Python files
 	@find . -iname "*.py" -not -path "./tests/*" | xargs -I {} pylint --output-format=colorized {}; true
 	@black .
 
-###############################################################################
-# Docker process management commands
-###############################################################################
-check_ports:
+## #############################################################################
+## # Docker process management commands
+## #############################################################################
+check_ports:	## Check which processes are running on development ports
 	@echo "Checking what's running on development ports:"
 	@lsof -i :$(API_PORT) || echo "Port $(API_PORT) is free"
 	@lsof -i :$(APP_PORT) || echo "Port $(APP_PORT) is free"
 
-kill_ports:
+kill_ports:	## Kill all processes running on development ports
 	@echo "Killing processes on development ports:"
 	@lsof -ti :$(API_PORT) | xargs kill -9 || echo "No process on port $(API_PORT)"
 	@lsof -ti :$(APP_PORT) | xargs kill -9 || echo "No process on port $(APP_PORT)"
 
-ps_docker:
+ps_docker:	## List running Docker containers in a formatted table
 	@echo "Running Docker containers:"
 	@docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
 
-###############################################################################
-# Data-related commands
-###############################################################################
-data_extract:
+## #############################################################################
+## # Data-related commands
+## #############################################################################
+data_extract:	## Download and extract raw data from remote source
 	@mkdir -p data/raw
 	@curl -L -o ./data/raw/$(RAW_DATA_ARCHIVE) $(RAW_DATA_URL)
 	@unzip -u data/raw/$(RAW_DATA_ARCHIVE) -d data/raw
 	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
-data_transform:
+data_transform:	## Transform raw data into processed format (work in progress)
 	@echo "Work in progress"
 
-###############################################################################
-# Backend-related commands
-###############################################################################
-api_dev:
+## #############################################################################
+## # Backend-related commands
+## #############################################################################
+api_dev:	## Start API server in development mode with auto-reload
 	@uvicorn api.run:app --reload --port $(API_PORT)
 
-api_docker_build:
+api_docker_build:	## Build Docker image for API service
 	@$(MAKE) docker_build SERVICE=api TAG=$(API_TAG)
 
-api_docker_start:
+api_docker_start:	## Start API service in Docker container
 	@$(MAKE) docker_start SERVICE=api PORT=$(API_PORT) TAG=$(API_TAG)
 
-api_docker_stop:
+api_docker_stop:	## Stop and remove API Docker container
 	@$(MAKE) docker_stop SERVICE=api
 
-###############################################################################
-# Frontend-related commands
-###############################################################################
-app_dev:
+## #############################################################################
+## # Frontend-related commands
+## #############################################################################
+app_dev:	## Start Streamlit app in development mode
 	@streamlit run app/run.py
 
-app_docker_build:
+app_docker_build:	## Build Docker image for frontend app service
 	@$(MAKE) docker_build SERVICE=app TAG=$(APP_TAG)
 
-app_docker_start:
+app_docker_start:	## Start frontend app service in Docker container
 	@$(MAKE) docker_start SERVICE=app PORT=$(APP_PORT) TAG=$(APP_TAG)
 
-app_docker_stop:
+app_docker_stop:	## Stop and remove frontend app Docker container
 	@$(MAKE) docker_stop SERVICE=app
 
 ###############################################################################
@@ -114,15 +116,12 @@ cloud_init:
 		--location=$(REGION) \
 		--description="$(PROJECT) Artifact Registry"
 
-# Generic cloud build command with service parameter
-cloud_build:
+cloud_build:	
 	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) .
 
-# Generic cloud push command with service parameter
 cloud_push:
 	@docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)
 
-# Generic cloud deploy command with service parameter
 cloud_deploy:
 	@echo "Deploying $(SERVICE) with GCloud Run"
 	@gcloud run deploy $(PROJECT)-$(SERVICE) \
@@ -140,23 +139,26 @@ cloud_pipeline:
 	@$(MAKE) cloud_push SERVICE=$(SERVICE) TAG=$(TAG)
 	@$(MAKE) cloud_deploy SERVICE=$(SERVICE) TAG=$(TAG) MEMORY=$(MEMORY) PORT=$(PORT)
 
-cloud_pipeline_api:
+## ###############################################################################
+## # Cloud-related commands
+## ###############################################################################
+cloud_pipeline_api:	## Deploy API service to Google Cloud using predefined configuration
 	@$(MAKE) cloud_pipeline SERVICE=api TAG=$(API_TAG) MEMORY=$(API_MEMORY) PORT=$(API_PORT)
 
-cloud_pipeline_app:
+cloud_pipeline_app:	## Deploy frontend app service to Google Cloud using predefined configuration
 	@$(MAKE) cloud_pipeline SERVICE=app TAG=$(APP_TAG) MEMORY=$(APP_MEMORY) PORT=$(APP_PORT)
 
-###############################################################################
-# Test commands
-###############################################################################
-test:
+## ###############################################################################
+## # Test commands
+## ###############################################################################
+test:	## Run all tests using pytest
 	@pytest -v
 
-test_api:
+test_api:	## Run API-specific tests
 	@pytest api/tests/test_api.py -v
 
-test_app:
+test_app:	## Run frontend app-specific tests
 	@pytest app/tests/test_app.py -v
 
-test_data:
+test_data:	## Run data processing and validation tests
 	@pytest tests/test_data.py -v
