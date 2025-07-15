@@ -58,8 +58,8 @@ data_extract:	## Download and extract raw data from remote source
 	@unzip -u data/raw/$(RAW_DATA_ARCHIVE) -d data/raw
 	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
-data_transform:	## Transform raw data into processed format (work in progress)
-	@echo "Work in progress"
+data_preprocess:	## Transform raw data into processed format.
+	@python -m scripts.data_preprocess
 
 ## #############################################################################
 ## # Backend-related commands
