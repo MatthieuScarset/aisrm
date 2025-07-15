@@ -1,7 +1,15 @@
+# Testing
+pytest
+pylint
+black
+
+# Data analysis & visualization
+matplotlib
+seaborn
+jupyterlab
+notebook
+black[jupyter]
+numpy
 pandas
 scikit-learn
-joblib
-streamlit
-kaggle
-jupyter
-matplotlib
+unidecode
