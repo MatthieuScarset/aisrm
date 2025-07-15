@@ -11,6 +11,7 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 - **Top 3 recommendations** with probability/confidence
 - **Explainability:** Shows why an agent is recommended (past deals, similar features)
 - **Streamlit web app:** Easy-to-use interface for demo and experimentation
+- **Automatic build and deploy to GCP:** Github PRs trigger code quality checks and release tags trigger a new deployment.
 
 ## ⚡️ Getting Started
 
@@ -37,11 +38,7 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
         make init
         ```
 
-    - Install dependencies
-
-        ```bash
-        make requirements
-        ```
+    - Run `make` help to learn more about all available commands
 
 ## 👨‍💻 Develop
 
@@ -67,11 +64,67 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
         make model_train...etc
         ```
 
-3. **Etc...**
+3. **Application development**
+
+    - Start the backend application in dev mode:
+
+        ```bash
+        make api_dev
+        ```
+
+    - Start the frontend application in dev mode:
+
+        ```bash
+        make app_dev
+        ```
+
 
 ## 🏗️ Deploy
 
-1. **To do**
+1. **Docker images**
+
+    - Build and test the containers:
+
+        ```bash
+        make api_docker_build
+        make api_docker_start
+        # Test the API routes in your browser:
+        # http://localhost:8500
+        make api_docker_stop
+        ```
+
+        ```bash
+        make app_docker_build
+        make app_docker_start
+        # Test the frontend in your browser:
+        # http://localhost:8501
+        make app_docker_stop
+        ```
+
+2. **Cloud build**
+
+    - Option 1: Manual deployment
+
+        ```bash
+        # Build, push and publish the backend to GCP 
+        make cloud_pipeline_api
+        # Build, push and publish the fronted to GCP 
+        make cloud_pipeline_app
+        ```
+
+    - Option 2: Create a release tag 
+
+        ```bash
+        # Check latest tags
+        git fetch --tags
+        git tag
+        # Tag must be named release-{app|api}-{0.0.x}
+        # @see .github/workflows/deploy.yml -> on.push.tag
+        git tag -a release-app-0.0.1 -m "Describe this version"
+        git push --tags
+        # Watch the Github Actions run
+        # @see https://github.com/MatthieuScarset/aisrm/actions/workflows/deploy.yml
+        ```
 
 ---
 
