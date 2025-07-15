@@ -12,3 +12,4 @@ black[jupyter]
 numpy
 pandas
 scikit-learn
+unidecode
