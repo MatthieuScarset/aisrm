@@ -22,7 +22,8 @@ install_package:	## Install this package in editable mode.
 	@pip install -e .
 
 clean:	## Delete temporary files, cache, and build artifacts
-	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
+	@rm -rf data/**/*.csv
+	@rm -rf data/**/$(RAW_DATA_ARCHIVE)
 	@find . -type f -name "*.py[co]" -delete
 	@find . -type d -name "__pycache__" -delete
 	@rm -fr **/__pycache__ **/*.pyc **/.ipynb_checkpoints *.egg-info/ .pytest_cache/
@@ -59,7 +60,22 @@ data_extract:	## Download and extract raw data from remote source
 	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
 data_preprocess:	## Transform raw data into processed format.
-	@python -m scripts.data_preprocess
+	@python -m src.data_preparation
+
+data_pipeline:	## Transform processed data for model training.
+	@python -m src.data_pipeline
+
+.PHONY: data
+data:	## Full ETL data pipeline.
+	@$(MAKE) data_extract
+	@$(MAKE) data_preprocess
+	@$(MAKE) data_pipeline
+
+## #############################################################################
+## # Model training-related commands
+## #############################################################################
+model:	## Train a model.
+	@echo "Work in progress"
 
 ## #############################################################################
 ## # Backend-related commands

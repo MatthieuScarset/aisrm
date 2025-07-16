@@ -7,9 +7,7 @@ for analysis and modeling.
 import pandas as pd
 import unidecode
 
-from scripts.config import RAW_DATA_PATH, PROCESSED_DATA_PATH
-
-DATA_FOLDER = "data"
+from src.config import RAW_DATA_PATH, PROCESSED_DATA_PATH
 
 
 def classify_opportunity(row):
@@ -28,7 +26,9 @@ def _opportunity_status_binary(value):
 
 def _clean_string(value):
     """Helper method to clean a given string"""
-    return unidecode.unidecode(value.strip().lower()) if isinstance(value, str) else value
+    return (
+        unidecode.unidecode(value.strip().lower()) if isinstance(value, str) else value
+    )
 
 
 def clean_string_columns(df, columns):
@@ -54,8 +54,10 @@ def preprocess():
 
     df = df_sales.copy()
 
-    # Remove NaN.
-    df.dropna(subset=["close_value", "account"], inplace=True)
+    # Do not remove NaN for now.
+    # Cleaner to do this directly within the data pipeline.
+    # @see https://shorturl.at/B0Abu
+    # df.dropna(subset=["close_value", "account"], inplace=True)
 
     # Better status of the sale, based on dates.
     df["opportunity_status"] = df.apply(classify_opportunity, axis=1)
@@ -120,5 +122,10 @@ def preprocess():
     print(f"🤝 Preprocessed dataset exported: {target_file}")
 
 
-if __name__ == "__main__":
+def main():
+    """Main method of this module"""
     preprocess()
+
+
+if __name__ == "__main__":
+    main()
