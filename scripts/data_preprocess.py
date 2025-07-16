@@ -1,10 +1,34 @@
 from scripts.config import RAW_DATA_PATH, PROCESSED_DATA_PATH
 import pandas as pd
+import unidecode
 
 DATA_FOLDER = "data"
 
-def deal_stage_binary(value):
-    return int(1 if value.lower() == 'won' else 0)
+def classify_opportunity(row):
+    if pd.isna(row["engage_date"]):
+        return "initial"
+    elif pd.isna(row["close_date"]):
+        return "in_progress"
+    else:
+        return "completed"
+
+def opportunity_status_binary(value):
+    return int(1 if value.lower() == 'completed' else 0)
+
+def clean_string_columns(df, columns):
+    """
+    Clean string columns in a DataFrame:
+    - Strip whitespace
+    - Convert to lowercase
+    - Remove accents/special characters
+    - Skip columns in exclude_columns
+    """
+    for col in columns:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda x: unidecode.unidecode(
+                x.strip().lower()) if isinstance(x, str) else x)
+
+    return df
 
 def preprocess():
     df_accounts = pd.read_csv(RAW_DATA_PATH + "/accounts.csv")
@@ -14,13 +38,13 @@ def preprocess():
 
     df = df_sales.copy()
 
-    # Remove rows without a `y` (i.e. `close_value` is NaN):
-    df.dropna(subset=['close_value'], inplace=True)
+    # Remove NaN.
+    df.dropna(subset=['close_value', 'account'], inplace=True)
 
-    # Transform sales status into a binary column (`Won` = 1, otherwise 0)
-    df['won'] = df['deal_stage'].apply(deal_stage_binary)
+    # Better status of the sale, based on dates.
+    df['opportunity_status'] = df.apply(classify_opportunity, axis=1)
+    df['won'] = df['opportunity_status'].apply(opportunity_status_binary)      
     df['won'] = pd.to_numeric(df['won'], downcast='integer')
-    df['won'].value_counts()
     
     # Get the duration
     df['engage_date'] = pd.to_datetime(df['engage_date'])
@@ -72,6 +96,9 @@ def preprocess():
     for col in (df.select_dtypes(include=['object'])).columns:
         df[col] = df[col].astype('string')
 
+    string_columns = df.select_dtypes(include=['string'])
+    df = clean_string_columns(df, list(string_columns))
+    
     # Our target is a number.
     df['close_value'] = pd.to_numeric(df['close_value'], downcast='integer')
 
