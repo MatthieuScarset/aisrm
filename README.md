@@ -42,41 +42,24 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 
 ## 👨‍💻 Develop
 
-1. **Prepare data**
+1. **Data & Model training**
 
-    - Get the raw data
+```bash
+# Get the raw data.
+# Clean and compiled into a new raw dataset.
+make data
+# Build and save model files.
+make data_preprocess
+```
 
-        ```bash
-        make data_extract
-        ```
+2. **Application development**
 
-    - Clean and compiled raw datasets to generated the processed dataset file:
-
-        ```bash
-        make data_preprocess
-        ```
-
-2. **Build model**
-
-    - To be defined
-
-        ```bash
-        make model_train...etc
-        ```
-
-3. **Application development**
-
-    - Start the backend application in dev mode:
-
-        ```bash
-        make api_dev
-        ```
-
-    - Start the frontend application in dev mode:
-
-        ```bash
-        make app_dev
-        ```
+```bash
+# Start the backend application in dev mode:
+make api_dev
+# Start the frontend application in dev mode:
+make app_dev
+```
 
 
 ## 🏗️ Deploy
