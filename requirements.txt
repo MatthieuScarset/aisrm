@@ -13,3 +13,10 @@ numpy
 pandas
 scikit-learn
 unidecode
+
+# API
+fastapi
+uvicorn
+
+# App
+streamlit
