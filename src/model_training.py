@@ -99,7 +99,8 @@ def _save_model(model, preprocessor, cv_results):
         pickle.dump(model, f)
 
     # Save preprocessor
-    preprocessor_path = os.path.join(MODELS_PATH, f"preprocessor_{timestamp}.pkl")
+    preprocessor_path = os.path.join(
+        MODELS_PATH, f"preprocessor_{timestamp}.pkl")
     with open(preprocessor_path, "wb") as f:
         pickle.dump(preprocessor, f)
 
@@ -121,24 +122,28 @@ def _save_model(model, preprocessor, cv_results):
     return model_path, preprocessor_path, metadata_path
 
 
-def _load_model(model_path, preprocessor_path):
+def _load_model(model_path):
     """
-    Load a saved model and preprocessor from pickle files.
+    Load a saved model, preprocessor and metadata from pickle files.
 
     Args:
         model_path (str): Path to the saved model pickle file
-        preprocessor_path (str): Path to the saved preprocessor pickle file
 
     Returns:
-        tuple: (model, preprocessor)
+        tuple: (model, preprocessor, metadata)
     """
     with open(model_path, "rb") as f:
         model = pickle.load(f)
 
+    preprocessor_path = model_path.replace("model_", "preprocessor_")
     with open(preprocessor_path, "rb") as f:
         preprocessor = pickle.load(f)
 
-    return model, preprocessor
+    metadata_path = model_path.replace("model_", "metadata_")
+    with open(metadata_path, "rb") as f:
+        metadata = pickle.load(f)
+
+    return model, preprocessor, metadata
 
 
 def load_latest_model():
@@ -154,24 +159,16 @@ def load_latest_model():
     ]
 
     if not model_files:
-        raise FileNotFoundError("No saved models found in the models directory")
+        raise FileNotFoundError(
+            "No saved models found in the models directory")
 
     # Sort by timestamp (filename contains timestamp)
     latest_model_file = sorted(model_files)[-1]
-    timestamp = latest_model_file.split("_model_")[-1].replace(".pkl", "")
 
+    # Load model, preprocessor and metadata
     model_path = os.path.join(MODELS_PATH, latest_model_file)
-    preprocessor_path = os.path.join(MODELS_PATH, f"preprocessor_{timestamp}.pkl")
-    metadata_path = os.path.join(MODELS_PATH, f"model_metadata_{timestamp}.pkl")
 
-    # Load model and preprocessor
-    model, preprocessor = _load_model(model_path, preprocessor_path)
-
-    # Load metadata
-    with open(metadata_path, "rb") as f:
-        metadata = pickle.load(f)
-
-    return model, preprocessor, metadata
+    return _load_model(model_path)
 
 
 if __name__ == "__main__":
@@ -193,20 +190,23 @@ if __name__ == "__main__":
 
     featuresdf = df.drop(columns=[target_column])
 
-    num_columns = featuresdf.select_dtypes(include=[np.number]).columns.tolist()
+    num_columns = featuresdf.select_dtypes(
+        include=[np.number]).columns.tolist()
     cat_columns = featuresdf.select_dtypes(
         include=["object", "string"]
     ).columns.tolist()
 
     # Preprocess
-    preprocessor = _getpreprocessor(_num_cols=num_columns, _cat_cols=cat_columns)
+    preprocessor = _getpreprocessor(
+        _num_cols=num_columns, _cat_cols=cat_columns)
 
     X_train_transformed = preprocessor.fit_transform(X_train)
     X_test_transformed = preprocessor.transform(X_test)
     features_columns = preprocessor.get_feature_names_out()
     print(f"Features out: {len(features_columns)}")
     X_train_array = np.asarray(X_train_transformed)
-    assert not np.isnan(X_train_array).any(), "Training data contains missing values"
+    assert not np.isnan(X_train_array).any(
+    ), "Training data contains missing values"
 
     # Fit
     model = _get_model()
