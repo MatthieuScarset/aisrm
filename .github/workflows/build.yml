@@ -20,7 +20,7 @@ jobs:
         python-version: "3.10"
 
     - name: Install dependencies
-      run: pip install pylint black
+      run: pip install -r requirements.txt
 
     - name: Lint
       run: make lint
