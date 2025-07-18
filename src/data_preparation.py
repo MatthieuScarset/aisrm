@@ -7,7 +7,7 @@ for analysis and modeling.
 import pandas as pd
 import unidecode
 
-from src.config import RAW_DATA_PATH, PROCESSED_DATA_PATH
+from src.config import RAW_DATA_PATH
 
 
 def classify_opportunity(row):
@@ -117,9 +117,9 @@ def preprocess():
     # Our target is a number.
     df["close_value"] = pd.to_numeric(df["close_value"], downcast="integer")
 
-    target_file = PROCESSED_DATA_PATH + "/dataset.csv"
+    target_file = RAW_DATA_PATH + "/dataset.csv"
     df.to_csv(target_file)
-    print(f"🤝 Preprocessed dataset exported: {target_file}")
+    print(f"🤝 Raw dataset compiled and exported: {target_file}")
 
 
 def main():
