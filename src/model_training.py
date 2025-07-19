@@ -1,4 +1,3 @@
-# pylint: disable=redefined-outer-name
 """ML model module for the AISRM project.
 
 This module contains definitions or functions related to model training.
@@ -45,19 +44,19 @@ def _get_target_column(df: pd.DataFrame) -> str:
     return df.columns[-1]
 
 
-def _split(df: pd.DataFrame, _target_column: str) -> list:
+def _split(df: pd.DataFrame, target_column: str) -> list:
     """
     Run train test split, assuming target is the last column.
     """
-    feature_columns = [col for col in df.columns if col != _target_column]
+    feature_columns = [col for col in df.columns if col != target_column]
 
     X = df[feature_columns]  # pylint: disable=invalid-name
-    y = df[_target_column]
+    y = df[target_column]
 
     return train_test_split(X, y, test_size=HOLD_OUT)
 
 
-def _getpreprocessor(_num_cols: list, _cat_cols: list) -> ColumnTransformer:
+def _getpreprocessor(num_columns: list, cat_columns: list) -> ColumnTransformer:
 
     num_pipeline = Pipeline(
         [
@@ -74,8 +73,8 @@ def _getpreprocessor(_num_cols: list, _cat_cols: list) -> ColumnTransformer:
 
     return ColumnTransformer(
         [
-            ("num_transformer", num_pipeline, _num_cols),
-            ("cat_transformer", cat_pipeline, _cat_cols),
+            ("num_transformer", num_pipeline, num_columns),
+            ("cat_transformer", cat_pipeline, cat_columns),
         ]
     )
 
@@ -189,17 +188,19 @@ if __name__ == "__main__":
     print(f"Y train mean ({target_column}): {y_train.mean()}")
     assert X_test.shape[0] + X_train.shape[0] == df.shape[0]
 
-    featuresdf = df.drop(columns=[target_column])
+    features_df = df.drop(columns=[target_column])
 
-    num_columns = featuresdf.select_dtypes(
+    numerical_columns = features_df.select_dtypes(
         include=[np.number]).columns.tolist()
-    cat_columns = featuresdf.select_dtypes(
+
+    textual_columns = features_df.select_dtypes(
         include=["object", "string"]
     ).columns.tolist()
 
     # Preprocess
     preprocessor = _getpreprocessor(
-        _num_cols=num_columns, _cat_cols=cat_columns)
+        num_columns=numerical_columns, cat_columns=textual_columns
+    )
 
     X_train_transformed = preprocessor.fit_transform(X_train)
     X_test_transformed = preprocessor.transform(X_test)

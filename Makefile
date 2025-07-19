@@ -31,8 +31,7 @@ clean:	## Delete temporary files, cache, and build artifacts
 	@rm -f **/.DS_Store **/*Zone.Identifier
 
 lint:	## Run pylint and black code formatting on Python files
-	@find . -iname "*.py" -not -path "./tests/*" | xargs -I {} pylint --output-format=colorized {}; true
-	@black .
+	@find . -iname "*.py" -not -path "./tests/*" -not -name ".pylintrc" | xargs -I {} pylint --output-format=colorized {}; true
 
 ## #############################################################################
 ## # Docker process management commands
