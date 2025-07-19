@@ -10,33 +10,33 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, cross_validate
-from sklearn.preprocessing import RobustScaler, OneHotEncoder
 from sklearn.pipeline import Pipeline
-from src.config import RAW_DATA_PATH, MODELS_PATH, HOLD_OUT
+from sklearn.preprocessing import RobustScaler, OneHotEncoder
+from src.config import PROCESSED_DATA_PATH, MODELS_PATH, HOLD_OUT
 
 
 def _load_dataset() -> pd.DataFrame:
     """
     Load the raw dataset.
     """
-    return pd.read_csv(RAW_DATA_PATH + "/dataset.csv")
+    return pd.read_csv(PROCESSED_DATA_PATH + "/dataset.csv")
 
 
 def _clean_dataset(df: pd.DataFrame):
     """
     Prepare dataset before training.
     """
+    # Remove NaN.
+    target_column = df.columns[-1]
+    df = df.dropna(subset=[target_column])
 
     # Drop useless columns
-    useless_columns = ["Unnamed: 0"]
-    for col in useless_columns:
-        if col in df.columns:
+    for col in df.columns:
+        if col.startswith("Unnamed:"):
             df = df.drop(col, axis=1)
-
-    # Remove NaN.
-    df = df.dropna()
 
     return df
 
@@ -61,6 +61,7 @@ def _getpreprocessor(_num_cols: list, _cat_cols: list) -> ColumnTransformer:
 
     num_pipeline = Pipeline(
         [
+            ("imputer", SimpleImputer(strategy="mean")),
             ("scaler", RobustScaler()),
         ]
     )
