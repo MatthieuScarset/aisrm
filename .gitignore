@@ -1,4 +1,5 @@
 # Local & temporary files.
+.DS_Store
 .venv/
 .devcontainer/
 __pycache__/

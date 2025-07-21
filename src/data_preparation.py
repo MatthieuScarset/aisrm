@@ -117,9 +117,12 @@ def preprocess():
     # Our target is a number.
     df["close_value"] = pd.to_numeric(df["close_value"], downcast="integer")
 
+    # Remove NaN targets.
+    df = df.dropna(subset=["close_value"]).reset_index(drop=True)
+
     target_file = PROCESSED_DATA_PATH + "/dataset.csv"
-    df.to_csv(target_file)
-    print(f"🤝 Preprocessed dataset exported: {target_file}")
+    df.to_csv(target_file, index=False)
+    print(f"🤝 Raw dataset compiled and exported: {target_file}")
 
 
 def main():

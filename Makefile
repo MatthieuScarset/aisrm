@@ -24,14 +24,14 @@ install_package:	## Install this package in editable mode.
 clean:	## Delete temporary files, cache, and build artifacts
 	@rm -rf data/**/*.csv
 	@rm -rf data/**/$(RAW_DATA_ARCHIVE)
+	@find . -type f -name "*.pkl" -delete
 	@find . -type f -name "*.py[co]" -delete
 	@find . -type d -name "__pycache__" -delete
 	@rm -fr **/__pycache__ **/*.pyc **/.ipynb_checkpoints *.egg-info/ .pytest_cache/
 	@rm -f **/.DS_Store **/*Zone.Identifier
 
 lint:	## Run pylint and black code formatting on Python files
-	@find . -iname "*.py" -not -path "./tests/*" | xargs -I {} pylint --output-format=colorized {}; true
-	@black .
+	@find . -iname "*.py" -not -path "./tests/*" -not -name ".pylintrc" | xargs -I {} pylint --output-format=colorized {}; true
 
 ## #############################################################################
 ## # Docker process management commands
@@ -59,23 +59,19 @@ data_extract:	## Download and extract raw data from remote source
 	@unzip -u data/raw/$(RAW_DATA_ARCHIVE) -d data/raw
 	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
-data_preprocess:	## Transform raw data into processed format.
+data_prepare:	## Compiles the raw dataset for model training.
 	@python -m src.data_preparation
-
-data_pipeline:	## Transform processed data for model training.
-	@python -m src.data_pipeline
 
 .PHONY: data
 data:	## Full ETL data pipeline.
 	@$(MAKE) data_extract
-	@$(MAKE) data_preprocess
-	@$(MAKE) data_pipeline
+	@$(MAKE) data_prepare
 
 ## #############################################################################
 ## # Model training-related commands
 ## #############################################################################
-model:	## Train a model.
-	@echo "Work in progress"
+model:	## Train and save model.
+	@python -m src.model_training
 
 ## #############################################################################
 ## # Backend-related commands
