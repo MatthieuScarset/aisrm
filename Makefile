@@ -27,6 +27,7 @@ clean:	## Delete temporary files, cache, and build artifacts
 	@find . -type f -name "*.pkl" -delete
 	@find . -type f -name "*.py[co]" -delete
 	@find . -type d -name "__pycache__" -delete
+	@find models/ -type d -name "*" -delete
 	@rm -fr **/__pycache__ **/*.pyc **/.ipynb_checkpoints *.egg-info/ .pytest_cache/
 	@rm -f **/.DS_Store **/*Zone.Identifier
 
@@ -60,7 +61,7 @@ data_extract:	## Download and extract raw data from remote source
 	@rm -rf data/raw/$(RAW_DATA_ARCHIVE)
 
 data_prepare:	## Compiles the raw dataset for model training.
-	@python -m src.data_preparation
+	@python -m src.data
 
 .PHONY: data
 data:	## Full ETL data pipeline.
@@ -71,7 +72,7 @@ data:	## Full ETL data pipeline.
 ## # Model training-related commands
 ## #############################################################################
 model:	## Train and save model.
-	@python -m src.model_training
+	@python -m src.model
 
 ## #############################################################################
 ## # Backend-related commands
