@@ -9,6 +9,7 @@ from datetime import datetime
 from fastapi import FastAPI
 from src.model import load_model
 from typing import Optional
+import pandas as pd
 
 app = FastAPI()
 
@@ -34,36 +35,43 @@ def root():
 @app.get("/predict")
 def predict(
     sales_agent: Optional[str] = None,
-    account: Optional[str]  = None,
-    series: Optional[str]  = None,
+    account: Optional[str] = None,
+    series: Optional[str] = None,
 ):
     """
     Root endpoint that returns a prediction from our model.
 
     Returns:
-        dict: A dictionary containing prediction and current timestamp.
+        dict: A dictionary of prediction, keyed by sale_agent.
     """
     model, preprocessor, metadata = load_model()
 
     # Default features required for prediction
+    all_agents = metadata['feature_categories']['sales_agent']
     features = metadata['feature_defaults']
-    
+
     if sales_agent != None:
+        all_agents = [sales_agent]
+
+    # Make predictions
+    predictions = {}
+    for sales_agent in all_agents:
         features['sales_agent'] = sales_agent
-        
-    if account != None:
-        features['account'] = account
 
-    if series != None:
-        features['series'] = series
+        if account != None:
+            features['account'] = account
 
-    # Transform features using the trained preprocessor
-    X_transformed = preprocessor.transform(features)
+        if series != None:
+            features['series'] = series
 
-    # Make prediction
-    prediction = model.predict(X_transformed)
+        # Convert dictionary to DataFrame (required by preprocessor)
+        features_df = pd.DataFrame(features)
 
-    return {
-        "prediction": float(prediction[0]),
-        "timestamp": datetime.now()
-    }
+        # Transform features using the trained preprocessor
+        X_transformed = preprocessor.transform(features_df)
+
+        # Predict now
+        prediction = float(model.predict(X_transformed)[0])
+        predictions[sales_agent] = prediction
+
+    return predictions
