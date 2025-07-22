@@ -4,7 +4,7 @@ This module contains definitions or functions related to model training.
 """
 
 from datetime import datetime
-from pickle import dump, HIGHEST_PROTOCOL
+from pickle import dump, load, HIGHEST_PROTOCOL
 import os
 import numpy as np
 import pandas as pd
@@ -90,7 +90,7 @@ def initialize_model() -> GradientBoostingRegressor:
 
 def save_model(model, preprocessor, metadata) -> str:
     model_folder_path = MODELS_PATH + "/" + \
-        str(datetime.now().timestamp()).split('.')[0]
+        str(datetime.now().timestamp()).split('.', maxsplit=1)[0]
     if model_folder_path not in os.listdir(MODELS_PATH):
         os.mkdir(model_folder_path)
     with open(model_folder_path + "/model.pkl", "wb") as f:
@@ -103,7 +103,52 @@ def save_model(model, preprocessor, metadata) -> str:
     return model_folder_path
 
 
-if __name__ == "__main__":
+def load_model():
+    """
+    Load the most recent model from MODELS_PATH.
+    """
+    # Get all directories in MODELS_PATH.
+    model_dirs = [d for d in os.listdir(MODELS_PATH)
+                  if os.path.isdir(os.path.join(MODELS_PATH, d))]
+
+    if not model_dirs:
+        raise FileNotFoundError("No model directories found in MODELS_PATH")
+
+    # Sort directories by name.
+    model_dirs.sort(reverse=True)
+    latest_model_dir = model_dirs[0]
+    model_folder_path = os.path.join(MODELS_PATH, latest_model_dir)
+
+    # Load the model components
+    with open(os.path.join(model_folder_path, "model.pkl"), "rb") as f:
+        model = load(f)
+    with open(os.path.join(model_folder_path, "preprocessor.pkl"), "rb") as f:
+        preprocessor = load(f)
+    with open(os.path.join(model_folder_path, "metadata.pkl"), "rb") as f:
+        metadata = load(f)
+
+    return model, preprocessor, metadata
+
+
+def get_feature_importance(model, preprocessor):
+    """Get feature importance from the trained model."""
+    if hasattr(model, 'feature_importances_'):
+        # Get feature names after preprocessing
+        if hasattr(preprocessor, 'get_feature_names_out'):
+            feature_names = preprocessor.get_feature_names_out()
+        else:
+            feature_names = [f"feature_{i}" for i in range(
+                len(model.feature_importances_))]
+
+        importance_df = pd.DataFrame({
+            'feature': feature_names,
+            'importance': model.feature_importances_
+        }).sort_values('importance', ascending=False)
+
+        return importance_df.to_dict()
+
+
+def train_and_save():
     # Load
     df = load_dataset()
     print(f"Raw dataset: {df.shape}")
@@ -149,16 +194,36 @@ if __name__ == "__main__":
     # Score
     # @todo Save results
     cv_results = cross_validate(model, X_test_transformed, y_test, cv=5)
-    score = cv_results["test_score"]
+    test_score = cv_results["test_score"]
 
     # Metadata
+    feature_importances = get_feature_importance(model, preprocessor)
+    feature_defaults = {}
+    for col in features_df.columns:
+        # Most frequent values for categories.
+        feature_defaults[col] = features_df[col].mode()
+        if col in numerical_columns:
+            # Mean values for numbers.
+            feature_defaults[col] = features_df[col].mean()
+
+    feature_categories = {}
+    for col in textual_columns:
+        feature_categories[col] = features_df[col].unique()
+
     metadata = {
-        "model": str(model).replace("()", ""),
-        "score": score,
+        "model_type": str(model).replace("()", ""),
+        "test_score": test_score,
+        "feature_importances": feature_importances,
+        "feature_defaults": feature_defaults,
+        "feature_categories": feature_categories,
     }
 
     # Export
     model_folder_path = save_model(model, preprocessor, metadata)
 
-    print(f"Test score: {score.mean():.4f} (+/- {score.std() * 2:.4f})")
+    print(f"Score: {test_score.mean():.4f} (+/- {test_score.std() * 2:.4f})")
     print(f"Model saved: {model_folder_path}")
+
+
+if __name__ == "__main__":
+    train_and_save()
