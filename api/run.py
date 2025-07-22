@@ -12,27 +12,41 @@ from typing import Optional
 from fastapi import FastAPI
 import pandas as pd
 
+ENV = os.getenv('ENV', "prod") 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_PATH = os.path.join(PROJECT_ROOT, "models")
 
 app = FastAPI()
 
 
+def get_model_folder_path():
+    model_folder_path = os.path.join(MODELS_PATH, 'production')
+
+    if ENV is not 'prod':
+        # Get all directories in MODELS_PATH.
+        model_dirs = [d for d in os.listdir(MODELS_PATH)
+                      if os.path.isdir(os.path.join(MODELS_PATH, d))]
+
+        if not model_dirs:
+            raise FileNotFoundError(
+                "No model directories found in MODELS_PATH")
+
+        # Sort directories by name.
+        model_dirs.sort(reverse=True)
+        latest_model_dir = model_dirs[0]
+        model_folder_path = os.path.join(MODELS_PATH, latest_model_dir)
+
+    return model_folder_path
+
+
 def load_model():
     """
     Load the most recent model from MODELS_PATH.
+
+    Params:
+        latest: If False, get latest model by folders name.
     """
-    # Get all directories in MODELS_PATH.
-    model_dirs = [d for d in os.listdir(MODELS_PATH)
-                  if os.path.isdir(os.path.join(MODELS_PATH, d))]
-
-    if not model_dirs:
-        raise FileNotFoundError("No model directories found in MODELS_PATH")
-
-    # Sort directories by name.
-    model_dirs.sort(reverse=True)
-    latest_model_dir = model_dirs[0]
-    model_folder_path = os.path.join(MODELS_PATH, latest_model_dir)
+    model_folder_path = get_model_folder_path()
 
     # Load the model components
     with open(os.path.join(model_folder_path, "model.pkl"), "rb") as f:
@@ -57,7 +71,8 @@ def root():
         "greeting": "Hello from AISMR",
         "timestamp": datetime.now(),
     }
-    
+
+
 @app.get("/info")
 def info():
     """
