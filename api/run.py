@@ -8,8 +8,8 @@ and basic endpoints for the CRM sales opportunities system.
 import os
 from pickle import load
 from datetime import datetime
-from fastapi import FastAPI
 from typing import Optional
+from fastapi import FastAPI
 import pandas as pd
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,11 +53,22 @@ def root():
     Returns:
         dict: A dictionary containing greeting message and current timestamp.
     """
-    _, _, metadata = load_model()
-
     return {
         "greeting": "Hello from AISMR",
         "timestamp": datetime.now(),
+    }
+    
+@app.get("/info")
+def info():
+    """
+    Root endpoint that returns information about the model.
+
+    Returns:
+        dict: A dictionary containing info about the latest model.
+    """
+    _, _, metadata = load_model()
+
+    return {
         "model_type": metadata['model_type'],
         "test_score": metadata['test_score'].mean(),
     }
@@ -81,7 +92,7 @@ def predict(
     all_agents = metadata['feature_categories']['sales_agent']
     features = metadata['feature_defaults']
 
-    if sales_agent != None:
+    if sales_agent is not None:
         all_agents = [sales_agent]
 
     # Make predictions
@@ -89,10 +100,10 @@ def predict(
     for sales_agent in all_agents:
         features['sales_agent'] = sales_agent
 
-        if account != None:
+        if account is not None:
             features['account'] = account
 
-        if series != None:
+        if series is not None:
             features['series'] = series
 
         # Convert dictionary to DataFrame (required by preprocessor)

@@ -105,20 +105,22 @@ def save_model(model, preprocessor, metadata) -> str:
 
 def get_feature_importance(model, preprocessor):
     """Get feature importance from the trained model."""
-    if hasattr(model, 'feature_importances_'):
-        # Get feature names after preprocessing
-        if hasattr(preprocessor, 'get_feature_names_out'):
-            feature_names = preprocessor.get_feature_names_out()
-        else:
-            feature_names = [f"feature_{i}" for i in range(
-                len(model.feature_importances_))]
+    if not hasattr(model, 'feature_importances_'):
+        return None
 
-        importance_df = pd.DataFrame({
-            'feature': feature_names,
-            'importance': model.feature_importances_
-        }).sort_values('importance', ascending=False)
+    # Get feature names after preprocessing
+    if hasattr(preprocessor, 'get_feature_names_out'):
+        feature_names = preprocessor.get_feature_names_out()
+    else:
+        feature_names = [f"feature_{i}" for i in range(
+            len(model.feature_importances_))]
 
-        return importance_df.to_dict()
+    importance_df = pd.DataFrame({
+        'feature': feature_names,
+        'importance': model.feature_importances_
+    }).sort_values('importance', ascending=False)
+
+    return importance_df.to_dict()
 
 
 def train_and_save():
