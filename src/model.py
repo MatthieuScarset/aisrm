@@ -3,6 +3,7 @@
 This module contains definitions or functions related to model training.
 """
 
+import sys
 from datetime import datetime
 from pickle import dump, HIGHEST_PROTOCOL
 import os
@@ -24,7 +25,7 @@ def load_dataset() -> pd.DataFrame:
     return pd.read_csv(PROCESSED_DATA_PATH + "/dataset.csv")
 
 
-def clean_dataset(df: pd.DataFrame):
+def clean_dataset(df: pd.DataFrame, version: str):
     """
     Prepare dataset before training.
     """
@@ -36,6 +37,13 @@ def clean_dataset(df: pd.DataFrame):
     for col in df.columns:
         if col.startswith("Unnamed:"):
             df = df.drop(col, axis=1)
+
+    # v2: Keep only a few features:
+    if version == 'v2':
+        v2_columns = ['sales_agent', 'sector', 'office_location', 'product']
+        target_column = get_target_column(df)
+        v2_columns.append(target_column)
+        df = df[v2_columns]
 
     return df
 
@@ -89,8 +97,8 @@ def initialize_model() -> GradientBoostingRegressor:
 
 
 def save_model(model, preprocessor, metadata) -> str:
-    model_folder_path = MODELS_PATH + "/" + \
-        str(datetime.now().timestamp()).split('.', maxsplit=1)[0]
+    timestamp = str(datetime.now().timestamp()).split('.', maxsplit=1)[0]
+    model_folder_path = f"{MODELS_PATH}/dev-{timestamp}"
     if model_folder_path not in os.listdir(MODELS_PATH):
         os.mkdir(model_folder_path)
     with open(model_folder_path + "/model.pkl", "wb") as f:
@@ -123,13 +131,19 @@ def get_feature_importance(model, preprocessor):
     return importance_df.to_dict()
 
 
-def train_and_save():
+def train_and_save(version: str):
+    """
+    Train a model for a given version, then save it with Pickle.
+    
+    Params:
+        version: A given version name, used for conditional logic in cleaning.
+    """
     # Load
     df = load_dataset()
     print(f"Raw dataset: {df.shape}")
 
     # Clean
-    df = clean_dataset(df)
+    df = clean_dataset(df, version)
     print(f"Clean dataset: {df.shape}")
 
     # Split
@@ -188,6 +202,7 @@ def train_and_save():
     metadata = {
         "model_type": str(model).replace("()", ""),
         "test_score": test_score,
+        "features_out": len(features_columns),
         "feature_importances": feature_importances,
         "feature_defaults": feature_defaults,
         "feature_categories": feature_categories,
@@ -201,4 +216,8 @@ def train_and_save():
 
 
 if __name__ == "__main__":
-    train_and_save()
+    version = 'v2'
+    if len(sys.argv) > 1:
+        version = sys.argv[1]
+
+    train_and_save(version)
