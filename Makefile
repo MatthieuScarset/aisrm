@@ -71,8 +71,13 @@ data:	## Full ETL data pipeline.
 ## #############################################################################
 ## # Model training-related commands
 ## #############################################################################
-model:	## Train and save model.
-	@python -m src.model
+.PHONY: models
+models:	## Train and save model for dev purpose.
+	@python -m src.model dev
+
+models_prod:	## Train and save models for deployment purpose.
+	@python -m src.model v1
+	@python -m src.model v2
 
 ## #############################################################################
 ## # Backend-related commands

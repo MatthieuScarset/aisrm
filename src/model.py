@@ -96,11 +96,13 @@ def initialize_model() -> GradientBoostingRegressor:
     return GradientBoostingRegressor()
 
 
-def save_model(model, preprocessor, metadata) -> str:
+def save_model(model, preprocessor, metadata, version: str) -> str:
     timestamp = str(datetime.now().timestamp()).split('.', maxsplit=1)[0]
-    model_folder_path = f"{MODELS_PATH}/dev-{timestamp}"
-    if model_folder_path not in os.listdir(MODELS_PATH):
+    model_folder_path = f"{MODELS_PATH}/{version}"
+    if version == 'dev':
+        model_folder_path = f"{MODELS_PATH}/dev-{timestamp}"
         os.mkdir(model_folder_path)
+    
     with open(model_folder_path + "/model.pkl", "wb") as f:
         dump(model, f, protocol=HIGHEST_PROTOCOL)
     with open(model_folder_path + "/preprocessor.pkl", "wb") as f:
@@ -209,7 +211,7 @@ def train_and_save(version: str):
     }
 
     # Export
-    model_folder_path = save_model(model, preprocessor, metadata)
+    model_folder_path = save_model(model, preprocessor, metadata, version)
 
     print(f"Score: {test_score.mean():.4f} (+/- {test_score.std() * 2:.4f})")
     print(f"Model saved: {model_folder_path}")
