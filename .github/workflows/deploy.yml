@@ -55,6 +55,10 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
+    - name: Generate Dotenv file
+      run: |
+        cp .env.example .env
+        make cloud_update_env
     - name: Build and push service
       run: |
         make cloud_build SERVICE=${{ env.SERVICE }} TAG=${{ github.ref_name }}

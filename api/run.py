@@ -8,8 +8,7 @@ and basic endpoints for the CRM sales opportunities system.
 import os
 from pickle import load
 from datetime import datetime
-from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import pandas as pd
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -110,13 +109,7 @@ def info(version: str):
 
 
 @app.get("/{version}/predict")
-def predict(
-    version: str,
-    sales_agent: Optional[str] = None,
-    account: Optional[str] = None,
-    series: Optional[str] = None,
-    product: Optional[str] = None,
-):
+def predict(version: str, request: Request):
     """
     Root endpoint that returns a prediction from our model.
 
@@ -129,25 +122,26 @@ def predict(
     all_agents = metadata['feature_categories']['sales_agent']
     features = metadata['feature_defaults']
 
-    if sales_agent is not None:
-        all_agents = [sales_agent]
+    # Get all query parameters from the request
+    kwargs = dict(request.query_params)
+
+    # If sales_agent is specified, only predict for that agent
+    if 'sales_agent' in kwargs and kwargs['sales_agent'] is not None:
+        all_agents = [kwargs['sales_agent']]
 
     # Make predictions
     predictions = {}
     for sales_agent in all_agents:
-        features['sales_agent'] = sales_agent
+        agent_features = features.copy()
+        agent_features['sales_agent'] = sales_agent
 
-        if account is not None:
-            features['account'] = account
-
-        if product is not None:
-            features['product'] = product
-
-        if series is not None:
-            features['series'] = series
+        # Update features with any provided kwargs.
+        for key, value in kwargs.items():
+            if key != 'sales_agent' and value is not None:
+                agent_features[key] = value
 
         # Convert dictionary to DataFrame (required by preprocessor)
-        features_df = pd.DataFrame(features)
+        features_df = pd.DataFrame([agent_features])
 
         # Transform features using the trained preprocessor
         X_transformed = preprocessor.transform(features_df)

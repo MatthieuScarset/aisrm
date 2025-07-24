@@ -5,8 +5,10 @@ WORKDIR /app
 COPY requirements-app.txt requirements.txt
 
 RUN pip install -U pip \
-    && pip install -r requirements.txt
+&& pip install -r requirements.txt
 
 COPY app/ ./app/
+COPY .env ./app/.env
+COPY models/ /app/models/
 
 CMD ["sh", "-c", "streamlit run app/run.py --server.port=${PORT} --server.address=0.0.0.0"]
