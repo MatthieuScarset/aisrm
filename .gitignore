@@ -9,6 +9,7 @@ __pycache__/
 .ipynb_checkpoints/
 *.egg-info/
 .env
+.env.bak
 
 # Data files.
 data/

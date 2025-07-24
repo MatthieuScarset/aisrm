@@ -1,4 +1,11 @@
 # Makefile for CRM Sales Opportunities Data Processing
+
+# Load .env file if it exists
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
+
 .DEFAULT_GOAL := default
 
 ## #############################################################################
@@ -164,6 +171,37 @@ cloud_pipeline_api:	## Deploy API service to Google Cloud using predefined confi
 
 cloud_pipeline_app:	## Deploy frontend app service to Google Cloud using predefined configuration
 	@$(MAKE) cloud_pipeline SERVICE=app TAG=$(APP_TAG) MEMORY=$(APP_MEMORY) PORT=$(APP_PORT)
+
+cloud_get_api_url:	## Get the deployed API URL
+	@gcloud run services describe $(PROJECT)-api --region=$(REGION) --format="value(status.url)" 2>/dev/null || echo "Service not found"
+
+cloud_get_app_url:	## Get the deployed APP URL
+	@gcloud run services describe $(PROJECT)-app --region=$(REGION) --format="value(status.url)" 2>/dev/null || echo "Service not found"
+
+cloud_get_urls:	## Get URLs of all deployed services
+	@echo "Getting deployed service URLs..."
+	@echo "API URL:"
+	@$(MAKE) cloud_get_api_url
+	@echo "APP URL:"
+	@$(MAKE) cloud_get_app_url
+
+cloud_update_env:	## Update .env file with deployed API URL
+	@echo "Updating API_BASE_URL in .env file..."
+	@API_URL=$$(gcloud run services describe $(PROJECT)-api --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
+	if [ -n "$$API_URL" ]; then \
+		sed -i.bak 's|^API_BASE_URL=.*|API_BASE_URL='$$API_URL'|' .env && \
+		echo "Updated API_BASE_URL to: $$API_URL"; \
+	else \
+		echo "Failed to get API URL"; \
+	fi
+	@echo "Updating APP_BASE_URL in .env file..."
+	@APP_URL=$$(gcloud run services describe $(PROJECT)-app --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
+	if [ -n "$$APP_URL" ]; then \
+		sed -i.bak 's|^APP_BASE_URL=.*|APP_BASE_URL='$$APP_URL'|' .env && \
+		echo "Updated APP_BASE_URL to: $$APP_URL"; \
+	else \
+		echo "Failed to get API URL"; \
+	fi	
 
 ## ###############################################################################
 ## # Test commands

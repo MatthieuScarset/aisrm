@@ -6,11 +6,14 @@ import os
 import streamlit as st
 import requests
 import pandas as pd
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configuration
-API_PORT = 8500
+API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8500')
 DEFAULT_VERSION = "v2"
-API_BASE_URL = f"http://localhost:{API_PORT}"
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_PATH = os.path.join(PROJECT_ROOT, "models")
 VERSIONS = [dir for dir in os.listdir(
@@ -20,7 +23,8 @@ st.title("Sales Agent Recommendation")
 st.write("Select a client and a product to get the recommended sales agent.")
 
 # Version selector
-version = st.selectbox("Model Version", sorted(VERSIONS, reverse=True), index=0)
+version = st.selectbox("Model Version", sorted(
+    VERSIONS, reverse=True), index=0)
 
 try:
     # Get model info and feature categories
@@ -43,7 +47,7 @@ try:
         for feature_name, category_values in categories.items():
             if feature_name == 'sales_agent':
                 continue
-        
+
             if category_values:  # Only show if there are category values
                 default_idx = 0
                 if feature_name in defaults:
@@ -57,7 +61,7 @@ try:
                     f"Select {feature_name.replace('_', ' ').title()}",
                     category_values,
                     index=default_idx,
-                )                
+                )
 
                 feature_inputs[feature_name] = selected_value
 
@@ -108,7 +112,7 @@ if st.checkbox("Show Feature Importances"):
             importances = importance_response.json()
             feature_names = list(importances['feature'].values())
             importance_values = list(importances['importance'].values())
-            
+
             importance_df = pd.DataFrame({
                 "Feature": feature_names,
                 "Importance": importance_values
