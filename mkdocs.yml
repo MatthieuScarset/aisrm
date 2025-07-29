@@ -1,5 +1,7 @@
 site_name: AISRM
 nav:
   - Home: index.md
+  - Getting started: getting-started.md
   - About: about.md
-theme: readthedocs
+theme:
+  name: readthedocs

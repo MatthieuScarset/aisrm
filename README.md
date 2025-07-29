@@ -142,10 +142,13 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 
         ```bash
         # Get the deployed API URL
-        cloud_get_api_url
+        make cloud_get_api_url
         # Get the deployed APP URL
-        cloud_get_app_url
+        make cloud_get_app_url
         ```
+
+Any questions? [Read the doc](https://matthieuscarset.github.io/aisrm/about/).
+
 ---
 
 Made with ❤️ by the AISRM team
