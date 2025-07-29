@@ -17,10 +17,12 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 
 1. **Clone the repository**
 
-    ```bash
-    git clone https://github.com/YOUR-ORG/aisrm.git
-    cd aisrm
-    ```
+    - Get the source code locally:
+
+        ```bash
+        git clone https://github.com/MatthieuScarset/aisrm.git
+        cd aisrm
+        ```
 
 2. **Set up your Python environment**
 
@@ -38,28 +40,47 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
         make init
         ```
 
-    - Run `make` help to learn more about all available commands
+    - Run `make help` to learn more about all available commands
 
 ## 👨‍💻 Develop
 
-1. **Data & Model training**
+1. **Data pipeline**
 
-```bash
-# Get the raw data.
-# Clean and compiled into a new raw dataset.
-make data
-# Build and save model files.
-make data_preprocess
-```
+    - Convert raw to processed data
 
-2. **Application development**
+        ```bash
+        # Get the raw data.
+        # Clean and compiled into a new raw dataset.
+        make data
+        ```
 
-```bash
-# Start the backend application in dev mode:
-make api_dev
-# Start the frontend application in dev mode:
-make app_dev
-```
+2. **Model training**
+
+    - Generate model for development purpose:
+
+        ```bash
+        # Build and save model files.
+        make model
+        ```
+    
+    - Commit a model version if you're happy with the results:
+
+        ```bash
+        cp -R models/dev-123456 models/v999
+        git add modelds/v999
+        git commit -m "feat: New model v999"
+        ```
+
+3. **Application development**
+
+    - You need to start both the backend and frontend applications:
+
+        ```bash
+        # Start the backend application in dev mode:
+        make api_dev
+        # Start the frontend application in dev mode:
+        make app_dev
+        ```
 
 
 ## 🏗️ Deploy
@@ -69,18 +90,26 @@ make app_dev
     - Build and test the containers:
 
         ```bash
+        # Rebuild the service
         make api_docker_build
+        # Start the service
         make api_docker_start
         # Test the API routes in your browser:
         # http://localhost:8500
+        make test_api
+        # Stop when you are done with your work.
         make api_docker_stop
         ```
 
         ```bash
+        # Rebuild the service
         make app_docker_build
+        # Start the service
         make app_docker_start
         # Test the frontend in your browser:
         # http://localhost:8501
+        make test_app
+        # Stop when you are done with your work.
         make app_docker_stop
         ```
 
@@ -109,6 +138,14 @@ make app_dev
         # @see https://github.com/MatthieuScarset/aisrm/actions/workflows/deploy.yml
         ```
 
+    - View your running applications:
+
+        ```bash
+        # Get the deployed API URL
+        cloud_get_api_url
+        # Get the deployed APP URL
+        cloud_get_app_url
+        ```
 ---
 
 Made with ❤️ by the AISRM team
