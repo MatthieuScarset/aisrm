@@ -15,3 +15,6 @@ __pycache__/
 data/
 models/**/
 !models/v*/
+
+# Documentation
+site/

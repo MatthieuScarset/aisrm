@@ -11,6 +11,7 @@ numpy
 pandas
 scikit-learn
 unidecode
+mkdocs
 
 # API
 # @see requirements-api.txt
