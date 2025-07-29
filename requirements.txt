@@ -13,8 +13,11 @@ scikit-learn
 unidecode
 
 # API
+# @see requirements-api.txt
 fastapi
 uvicorn
 
 # App
+# @see requirements-app.txt
 streamlit
+python-dotenv
