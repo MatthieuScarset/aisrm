@@ -1,7 +1,9 @@
 site_name: AISRM
 nav:
   - Home: index.md
-  - Getting started: getting-started.md
   - About: about.md
+  - Getting started: getting-started.md
+  - Architecture: architecture.md
+  - Further development: future.md
 theme:
   name: readthedocs
