@@ -91,13 +91,13 @@ models_prod:	## Train and save models for deployment purpose.
 api_dev:	## Start API server in development mode with auto-reload
 	@uvicorn api.run:app --reload --port $(API_PORT)
 
-api_docker_build:	## Build Docker image for API service
+api_build:	## Build Docker image for API service
 	@$(MAKE) docker_build SERVICE=api TAG=$(API_TAG)
 
-api_docker_start:	## Start API service in Docker container
+api_start:	## Start API service in Docker container
 	@$(MAKE) docker_start SERVICE=api PORT=$(API_PORT) TAG=$(API_TAG)
 
-api_docker_stop:	## Stop and remove API Docker container
+api_stop:	## Stop and remove API Docker container
 	@$(MAKE) docker_stop SERVICE=api
 
 ## #############################################################################
@@ -106,13 +106,13 @@ api_docker_stop:	## Stop and remove API Docker container
 app_dev:	## Start Streamlit app in development mode
 	@streamlit run app/run.py
 
-app_docker_build:	## Build Docker image for frontend app service
+app_build:	## Build Docker image for frontend app service
 	@$(MAKE) docker_build SERVICE=app TAG=$(APP_TAG)
 
-app_docker_start:	## Start frontend app service in Docker container
+app_start:	## Start frontend app service in Docker container
 	@$(MAKE) docker_start SERVICE=app PORT=$(APP_PORT) TAG=$(APP_TAG)
 
-app_docker_stop:	## Stop and remove frontend app Docker container
+app_stop:	## Stop and remove frontend app Docker container
 	@$(MAKE) docker_stop SERVICE=app
 
 ###############################################################################
