@@ -2,7 +2,7 @@
 
 _The best sales representative matching tool of all time!_
 
-![AISRM Preview](preview.gif)
+![AISRM Preview](docs/preview.gif)
 
 This project is an MVP for an AI-powered app that recommends the best sales representative for a given client and product.
 It uses real CRM data and machine learning to help sales teams match opportunities with the right agent, every time.
