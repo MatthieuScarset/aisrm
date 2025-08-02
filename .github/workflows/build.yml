@@ -69,6 +69,11 @@ jobs:
     - name: Install dependencies
       run: pip install pytest
 
+    - name: Generate Dotenv file
+      run: |
+        cp .env.example .env
+        make cloud_update_env
+
     - name: Build APP Docker image
       run: make docker_build SERVICE=app TAG=${{ env.APP_TAG }}
     
