@@ -73,6 +73,18 @@ def root():
         "timestamp": datetime.now(),
     }
 
+@app.get("/health")
+def health():
+    """
+    Helper endpoint to check service.
+
+    Returns:
+        dict: A dictionary containing a timestamp.
+    """
+    return {
+        "timestamp": datetime.now(),
+    }
+
 
 @app.get("/{version}/info")
 def info(version: str):

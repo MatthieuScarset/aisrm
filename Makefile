@@ -127,6 +127,11 @@ docker_start:
 docker_stop:
 	@docker stop $(PROJECT)-$(SERVICE) && docker rm $(PROJECT)-$(SERVICE)
 
+up:
+	@docker-compose up --build
+
+down:
+	@docker-compose down
 ###############################################################################
 # Production build commands
 ###############################################################################

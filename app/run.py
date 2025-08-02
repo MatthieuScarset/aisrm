@@ -77,7 +77,7 @@ version = st.selectbox("🤖 Model Version", sorted(
 
 try:
     # Get model info and feature categories
-    info_response = requests.get(f"{API_BASE_URL}/{version}/info")
+    info_response = requests.get(f"{API_BASE_URL}/{version}/info", timeout=10)
     if info_response.status_code == 200:
         model_info = info_response.json()
 
@@ -109,9 +109,9 @@ try:
                     'product': '📦',
                     'location': '📍'
                 }
-                
+
                 emoji = emoji_map.get(feature_name.lower(), '⚙️')
-                
+
                 selected_value = st.selectbox(
                     f"{emoji} Select {feature_name.replace('_', ' ').title()}",
                     category_values,
@@ -126,7 +126,8 @@ try:
                 # Make prediction request
                 predict_response = requests.get(
                     f"{API_BASE_URL}/{version}/predict",
-                    params=feature_inputs
+                    params=feature_inputs,
+                    timeout=10
                 )
 
             if predict_response.status_code == 200:
@@ -168,9 +169,9 @@ try:
                     <p><strong>Expected close value:</strong> ${best_score:,.2f}</p>
                     <p>This agent has the highest predicted performance for your selected criteria.</p>
                 </div>"""
-                
+
                 st.markdown(prediction_text, unsafe_allow_html=True)
-                
+
                 st.toast(f'Best recommendation: {best_agent["Sales Agent"]} with ${best_score:,.2f} expected close value!', icon='🎉')
             else:
                 st.error(f"❌ Prediction failed: {predict_response.status_code}")
@@ -178,17 +179,21 @@ try:
     else:
         st.error(f"Failed to load model info: {info_response.status_code}")
 
-except requests.exceptions.ConnectionError:
+except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
     st.error(
         f"❌ Cannot connect to API server. Make sure the API is running on {API_BASE_URL}")
+except requests.exceptions.RequestException as e:
+    st.error(f"❌ API request failed: {str(e)}")
+except ValueError as e:
+    st.error(f"❌ Invalid response from API: {str(e)}")
 except Exception as e:
-    st.error(f"An error occurred: {str(e)}")
+    st.error(f"❌ An unexpected error occurred: {str(e)}")
 
 # Feature importance visualization (optional)
 if st.checkbox("📊 Show Feature Importances"):
     try:
         importance_response = requests.get(
-            f"{API_BASE_URL}/{version}/feature-importances")
+            f"{API_BASE_URL}/{version}/feature-importances", timeout=10)
         if importance_response.status_code == 200:
             importances = importance_response.json()
             feature_names = list(importances['feature'].values())
@@ -202,27 +207,27 @@ if st.checkbox("📊 Show Feature Importances"):
             st.markdown('<div class="section-header">🔍 Feature Importances</div>', unsafe_allow_html=True)
             st.bar_chart(importance_df.set_index("Feature"))
 
-    except Exception as e:
+    except (requests.exceptions.RequestException, ValueError) as e:
         st.error(f"❌ Failed to load feature importances: {str(e)}")
 
 # Model information visualization (optional)
 if st.checkbox("📊 Show Model Information"):
     try:
-        info_response = requests.get(f"{API_BASE_URL}/{version}/info")
+        info_response = requests.get(f"{API_BASE_URL}/{version}/info", timeout=10)
         if info_response.status_code == 200:
             model_info = info_response.json()
-            
+
             st.markdown('<div class="section-header">📊 Model Information</div>', unsafe_allow_html=True)
-            
+
             # Create colored metrics
             col1, col2 = st.columns(2)
-            
+
             with col1:
                 st.metric(
                     label="🤖 Model Type",
                     value=model_info['model_type'],
                 )
-            
+
             with col2:
                 st.metric(
                     label="📈 Test Score",
@@ -230,5 +235,5 @@ if st.checkbox("📊 Show Model Information"):
                 )
         else:
             st.error(f"❌ Failed to load model info: {info_response.status_code}")
-    except Exception as e:
+    except (requests.exceptions.RequestException, ValueError) as e:
         st.error(f"❌ Failed to load model information: {str(e)}")

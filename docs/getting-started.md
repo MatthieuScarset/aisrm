@@ -121,7 +121,18 @@ models
 6 directories, 15 files
 ```
 
-## Backend Development
+## Development
+
+```bash
+# Run both backend and frontend services at once.
+# Shorthand for: "docker-compose up --build".
+make up
+# Kill services
+# Shorthand for: "docker-compose down".
+make down
+```
+
+### Running and testing the backend only
 
 The backend application handles **prediction making** and is built with FastAPI. It can run locally and be shipped as a Docker container for production.
 
@@ -141,7 +152,7 @@ make test_api
 make api_docker_stop
 ```
 
-## Frontend Development
+### Running and testing the frontend only
 
 The frontend application serves as our decision-making tool and is built with Streamlit. It can run locally and be shipped as a Docker container for production.
 

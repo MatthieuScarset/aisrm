@@ -2,6 +2,8 @@
 
 _The best sales representative matching tool of all time!_
 
+![AISRM Preview](preview.gif)
+
 This project is an MVP for an AI-powered app that recommends the best sales representative for a given client and product.
 It uses real CRM data and machine learning to help sales teams match opportunities with the right agent, every time.
 
@@ -87,7 +89,16 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 
 1. **Docker images**
 
-    - Build and test the containers:
+    - Alternatively, you can test containers separately:
+
+        ```bash
+        # Build and start services
+        make up
+        # Stop services.
+        make down
+        ```
+
+    - Alternatively, you can test containers separately:
 
         ```bash
         # Rebuild the service

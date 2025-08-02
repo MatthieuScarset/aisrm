@@ -102,7 +102,7 @@ def save_model(model, preprocessor, metadata, version: str) -> str:
     if version == 'dev':
         model_folder_path = f"{MODELS_PATH}/dev-{timestamp}"
         os.mkdir(model_folder_path)
-    
+
     with open(model_folder_path + "/model.pkl", "wb") as f:
         dump(model, f, protocol=HIGHEST_PROTOCOL)
     with open(model_folder_path + "/preprocessor.pkl", "wb") as f:

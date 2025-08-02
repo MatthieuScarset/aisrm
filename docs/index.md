@@ -1,5 +1,7 @@
 # AISRM - AI Sales Representative Matcher
 
+![AISRM Preview](../preview.gif)
+
 ## Welcome to AISRM
 
 AISRM is an innovative AI-powered decision tool designed to accelerate the process of finding and matching the perfect sales representatives for specific business needs. By leveraging advanced machine learning algorithms and data analysis, our application takes the guesswork out of sales team optimization.
