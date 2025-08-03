@@ -1,6 +1,6 @@
 # AISRM - AI Sales Representative Matcher
 
-![AISRM Preview](../preview.gif)
+![AISRM Preview](preview.gif)
 
 ## Welcome to AISRM
 
