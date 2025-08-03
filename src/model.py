@@ -5,7 +5,7 @@ This module contains definitions or functions related to model training.
 
 import sys
 from datetime import datetime
-from pickle import dump, load, HIGHEST_PROTOCOL
+from pickle import dump, HIGHEST_PROTOCOL
 import os
 import numpy as np
 import pandas as pd

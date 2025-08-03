@@ -35,8 +35,6 @@ clean:	## Delete temporary files, cache, and build artifacts
 	@find . -type f -name "*.pkl" -delete
 	@find . -type f -name "*.py[co]" -delete
 	@find . -type d -name "__pycache__" -delete
-	@find models/ -type f -name "*" -delete 2>/dev/null || true
-	@find models/ -mindepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
 	@rm -fr **/__pycache__ **/*.pyc **/.ipynb_checkpoints *.egg-info/ .pytest_cache/
 	@rm -f **/.DS_Store **/*Zone.Identifier
 
