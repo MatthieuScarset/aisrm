@@ -61,7 +61,6 @@ st.markdown("""
     }
     
     .stSelectbox > div > div {
-        background-color: #f8f9fa;
         border-radius: 8px;
     }
 </style>
