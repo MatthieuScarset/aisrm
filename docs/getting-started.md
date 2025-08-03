@@ -142,14 +142,14 @@ The backend application handles **prediction making** and is built with FastAPI.
 make api_dev
 
 # Build the Docker application
-make api_docker_build
+make api_build
 
 # Start and test the application
-make api_docker_start
+make api_start
 make test_api
 
 # Stop the service
-make api_docker_stop
+make api_stop
 ```
 
 ### Running and testing the frontend only
@@ -162,14 +162,14 @@ The frontend application serves as our decision-making tool and is built with St
 make app_dev
 
 # Build the Docker application
-make app_docker_build
+make app_build
 
 # Start and test the application
-make app_docker_start
+make app_start
 make test_app
 
 # Stop the service
-make app_docker_stop
+make app_stop
 ```
 
 ## Deployment

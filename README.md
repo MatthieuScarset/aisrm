@@ -102,26 +102,26 @@ It uses real CRM data and machine learning to help sales teams match opportuniti
 
         ```bash
         # Rebuild the service
-        make api_docker_build
+        make api_build
         # Start the service
-        make api_docker_start
+        make api_start
         # Test the API routes in your browser:
         # http://localhost:8500
         make test_api
         # Stop when you are done with your work.
-        make api_docker_stop
+        make api_stop
         ```
 
         ```bash
         # Rebuild the service
-        make app_docker_build
+        make app_build
         # Start the service
-        make app_docker_start
+        make app_start
         # Test the frontend in your browser:
         # http://localhost:8501
         make test_app
         # Stop when you are done with your work.
-        make app_docker_stop
+        make app_stop
         ```
 
 2. **Cloud build**
