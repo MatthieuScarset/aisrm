@@ -177,6 +177,8 @@ try:
 
     else:
         st.error(f"Failed to load model info: {info_response.status_code}")
+        st.error(f"Error: {info_response.text}")
+        st.error(f"Base URL: {API_BASE_URL}")
 
 except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
     st.error(
