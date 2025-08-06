@@ -114,21 +114,50 @@ def save_model(model, preprocessor, metadata, version: str) -> str:
 
 
 def get_feature_importance(model, preprocessor):
-    """Get feature importance from the trained model."""
+    """Get feature importance from the trained model, aggregated by original features."""
     if not hasattr(model, 'feature_importances_'):
         return None
 
     # Get feature names after preprocessing
     if hasattr(preprocessor, 'get_feature_names_out'):
-        feature_names = preprocessor.get_feature_names_out()
+        transformed_feature_names = preprocessor.get_feature_names_out()
     else:
-        feature_names = [f"feature_{i}" for i in range(
+        transformed_feature_names = [f"feature_{i}" for i in range(
             len(model.feature_importances_))]
 
-    importance_df = pd.DataFrame({
-        'feature': feature_names,
-        'importance': model.feature_importances_
-    }).sort_values('importance', ascending=False)
+    # Create mapping from transformed features to original features
+    original_importance = {}
+    
+    for i, transformed_name in enumerate(transformed_feature_names):
+        # Get raw importance and format as percentage
+        importance = model.feature_importances_[i] * 100
+        
+        # Extract original feature name from transformed name
+        # OneHotEncoder creates names like 'cat_transformer__feature_name_category'
+        # RobustScaler creates names like 'num_transformer__feature_name'
+        if '__' in transformed_name:
+            parts = transformed_name.split('__')
+            if len(parts) >= 2:
+                original_feature = parts[1]
+                # For one-hot encoded features, remove the category suffix
+                if '_' in original_feature and parts[0] == 'cat_transformer':
+                    original_feature = '_'.join(original_feature.split('_')[:-1])
+            else:
+                original_feature = transformed_name
+        else:
+            original_feature = transformed_name
+            
+        # Aggregate importance by original feature
+        if original_feature in original_importance:
+            original_importance[original_feature] += importance
+        else:
+            original_importance[original_feature] = importance
+
+    # Create DataFrame and sort by importance
+    importance_df = pd.DataFrame([
+        {'feature': feature, 'importance': importance}
+        for feature, importance in original_importance.items()
+    ]).sort_values('importance', ascending=False)
 
     return importance_df.to_dict()
 
