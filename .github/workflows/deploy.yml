@@ -41,8 +41,9 @@ jobs:
           echo "PORT=${{ vars.API_PORT }}" >> $GITHUB_ENV
         elif [ "$SERVICE" = "app" ]; then
           echo "PORT=${{ vars.APP_PORT }}" >> $GITHUB_ENV
+        else
+          echo "PORT=8500" >> $GITHUB_ENV  # default or fallback value
         fi
-        echo "Service PORT: $PORT"
 
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
