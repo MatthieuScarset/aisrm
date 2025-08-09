@@ -161,17 +161,17 @@ try:
                 # Highlight best recommendation
                 best_agent = pred_df.iloc[0]
                 # Get the original score for formatting
-                best_score = list(predictions.values())[0]
+                best_score = pred_df['Expected Close Value'].max()
                 prediction_text = f"""
                 <div class="prediction-highlight">
                     <h3>🏆 Recommended Sales Agent: {best_agent['Sales Agent']}</h3>
-                    <p><strong>Expected close value:</strong> ${best_score:,.2f}</p>
+                    <p><strong>Expected close value:</strong> {best_score}</p>
                     <p>This agent has the highest predicted performance for your selected criteria.</p>
                 </div>"""
 
                 st.markdown(prediction_text, unsafe_allow_html=True)
 
-                st.toast(f'Best recommendation: {best_agent["Sales Agent"]} with ${best_score:,.2f} expected close value!', icon='🎉')
+                st.toast(f'Best recommendation: {best_agent["Sales Agent"]} with {best_score} expected close value!', icon='🎉')
             else:
                 st.error(f"❌ Prediction failed: {predict_response.status_code}")
 
