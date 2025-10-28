@@ -17,12 +17,18 @@ default:
 help:	## Show this help.
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
-init:	## Create virtual environment (Pyenv)
-	-pyenv install $(PYTHON_VERSION)
-	-pyenv virtualenv $(PYTHON_VERSION) $(PYTHON_VENV)
-	-pyenv local $(PYTHON_VENV)
-	@pip install -U pip
-	@pip install -r requirements.txt
+init:	## Create virtual environment (venv)
+	-python3 -m venv $(PYTHON_VENV)
+	-$(PYTHON_VENV)/bin/pip install -U pip
+	-$(PYTHON_VENV)/bin/pip install --break-system-packages -r requirements.txt
+	@echo "Virtual environment '$(PYTHON_VENV)' created and dependencies installed."
+	@echo "Start venv as follow:"
+	@echo "========================================================================"
+	@echo "source .venv/bin/activate"
+	@echo "make data"
+	@echo "make model"
+	@echo "make up"
+	@echo "========================================================================"
 
 install_package:	## Install this package in editable mode.
 	@pip uninstall -y $(PACKAGE_NAME) || :
