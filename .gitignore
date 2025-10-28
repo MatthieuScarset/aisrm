@@ -18,3 +18,6 @@ models/**/
 
 # Documentation
 site/
+
+# GCP service account keys
+gcp-sa-key.json

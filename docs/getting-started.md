@@ -174,6 +174,12 @@ make app_stop
 
 ## Deployment
 
+Create the service account and instanciate 
+
+```bash
+make cloud_init
+```
+
 Backend and frontend applications are decoupled to ensure better performance, scalability, and the ability to deploy individual applications when needed.
 
 Deployments are triggered automatically via GitHub workflow when creating a new release tag:

@@ -32,7 +32,7 @@ jobs:
     environment: dev
     
     env:
-      PROJECT: aisrm
+      PROJECT_ID: aisrm-476510
       API_TAG: dev
       API_PORT: 8500
 
@@ -60,7 +60,7 @@ jobs:
     environment: dev
     
     env:
-      PROJECT: aisrm
+      PROJECT_ID: aisrm-476510
       APP_TAG: dev
       APP_PORT: 8501
 

@@ -2,8 +2,8 @@
 
 # Load .env file if it exists
 ifneq (,$(wildcard .env))
-    include .env
-    export
+	include .env
+	export
 endif
 
 .DEFAULT_GOAL := default
@@ -125,13 +125,13 @@ app_stop:	## Stop and remove frontend app Docker container
 # Generic docker commands (to reduce duplication)
 ###############################################################################
 docker_build:
-	@docker build -f Dockerfile.$(SERVICE) --tag=$(PROJECT)-$(SERVICE):$(TAG) .
+	@docker build -f Dockerfile.$(SERVICE) --tag=$(PACKAGE_NAME)-$(SERVICE):$(TAG) .
 
 docker_start:
-	docker run -it -d --name=$(PROJECT)-$(SERVICE) -p $(PORT):$(PORT) -e PORT=$(PORT) $(PROJECT)-$(SERVICE):$(TAG)
+	docker run -it -d --name=$(PACKAGE_NAME)-$(SERVICE) -p $(PORT):$(PORT) -e PORT=$(PORT) $(PACKAGE_NAME)-$(SERVICE):$(TAG)
 
 docker_stop:
-	@docker stop $(PROJECT)-$(SERVICE) && docker rm $(PROJECT)-$(SERVICE)
+	@docker stop $(PACKAGE_NAME)-$(SERVICE) && docker rm $(PACKAGE_NAME)-$(SERVICE)
 
 up:
 	@docker-compose up --build
@@ -141,26 +141,58 @@ down:
 ###############################################################################
 # Production build commands
 ###############################################################################
-cloud_init:
-	@gcloud auth configure-docker $(REGION)-docker.pkg.dev
-	@gcloud projects add-iam-policy-binding $(PROJECT) \
-		--member="user:$(EMAIL)" \
-		--role="roles/artifactregistry.writer"
+cloud_init: ## Initialize Google Cloud for deployments
+	@gcloud config set project $(PROJECT_ID)
+	@$(MAKE) cloud_enable_apis
+	@$(MAKE) cloud_create_artifact_repo
+	@$(MAKE) cloud_create_service_account
+	@$(MAKE) cloud_get_service_account_key
+
+cloud_enable_apis: # Enable required Google Cloud APIs
+	@gcloud services enable run.googleapis.com --project=$(PROJECT_ID)
+
+# Create Google Cloud Artifact Registry repository
+cloud_create_artifact_repo:
 	@gcloud artifacts repositories create $(ARTIFACTSREPO) \
 		--repository-format=docker \
 		--location=$(REGION) \
-		--description="$(PROJECT) Artifact Registry"
+		--project=$(PROJECT_ID) \
+		--description="$(PACKAGE_NAME) Artifact Registry" || echo "Repository already exists or error occurred"
+	@echo "Artifact Registry created: $(ARTIFACTSREPO) in region $(REGION)"
+
+# Create Google Cloud service account with required roles and download key
+cloud_create_service_account:
+	@gcloud iam service-accounts create $(PACKAGE_NAME)-sa \
+		--project=$(PROJECT_ID) \
+		--display-name="$(PACKAGE_NAME) Service Account"
+
+	@echo "Service account created: $(PACKAGE_NAME)-sa@$(PROJECT_ID).iam.gserviceaccount.com"
+	@gcloud projects add-iam-policy-binding $(PROJECT_ID) \
+		--member="serviceAccount:$(PACKAGE_NAME)-sa@$(PROJECT_ID).iam.gserviceaccount.com" \
+		--role="roles/artifactregistry.writer"
+	@gcloud projects add-iam-policy-binding $(PROJECT_ID) \
+		--member="serviceAccount:$(PACKAGE_NAME)-sa@$(PROJECT_ID).iam.gserviceaccount.com" \
+		--role="roles/run.admin"
+	@echo "Granted Artifact Registry Writer and Cloud Run Admin roles to: $(PACKAGE_NAME)-sa@$(PROJECT_ID).iam.gserviceaccount.com"
+
+# Download service account key for authentication
+cloud_get_service_account_key:
+	@gcloud iam service-accounts keys create gcp-sa-key.json \
+		--iam-account=$(PACKAGE_NAME)-sa@$(PROJECT_ID).iam.gserviceaccount.com \
+		--project=$(PROJECT_ID)
+	@echo "Service account key saved to gcp-sa-key.json"
 
 cloud_build:	
-	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) .
+	@docker build -f Dockerfile.$(SERVICE) --platform linux/amd64 --tag=$(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PACKAGE_NAME)-$(SERVICE):$(TAG) .
 
 cloud_push:
-	@docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)
+	@docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PACKAGE_NAME)-$(SERVICE):$(TAG)
 
 cloud_deploy:
 	@echo "Deploying $(SERVICE) with GCloud Run"
-	@gcloud run deploy $(PROJECT)-$(SERVICE) \
-		--image $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG) \
+	@gcloud config set project $(PROJECT_ID)	
+	@gcloud run deploy $(PACKAGE_NAME)-$(SERVICE) \
+		--image $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PACKAGE_NAME)-$(SERVICE):$(TAG) \
 		--memory $(MEMORY) \
 		--region $(REGION) \
 		--platform managed \
@@ -169,7 +201,7 @@ cloud_deploy:
 
 cloud_pipeline:
 	@echo "Running full pipeline..."
-	@echo "$(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PROJECT)-$(SERVICE):$(TAG)"
+	@echo "$(SERVICE) image: $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACTSREPO)/$(PACKAGE_NAME)-$(SERVICE):$(TAG)"
 	@$(MAKE) cloud_build SERVICE=$(SERVICE) TAG=$(TAG)
 	@$(MAKE) cloud_push SERVICE=$(SERVICE) TAG=$(TAG)
 	@$(MAKE) cloud_deploy SERVICE=$(SERVICE) TAG=$(TAG) MEMORY=$(MEMORY) PORT=$(PORT)
@@ -184,10 +216,10 @@ cloud_pipeline_app:	## Deploy frontend app service to Google Cloud using predefi
 	@$(MAKE) cloud_pipeline SERVICE=app TAG=$(APP_TAG) MEMORY=$(APP_MEMORY) PORT=$(APP_PORT)
 
 cloud_get_api_url:	## Get the deployed API URL
-	@gcloud run services describe $(PROJECT)-api --region=$(REGION) --format="value(status.url)" 2>/dev/null || echo "Service not found"
+	@gcloud run services describe $(PACKAGE_NAME)-api --region=$(REGION) --format="value(status.url)" 2>/dev/null || echo "Service not found"
 
 cloud_get_app_url:	## Get the deployed APP URL
-	@gcloud run services describe $(PROJECT)-app --region=$(REGION) --format="value(status.url)" 2>/dev/null || echo "Service not found"
+	@gcloud run services describe $(PACKAGE_NAME)-app --region=$(REGION) --format="value(status.url)" 2>/dev/null || echo "Service not found"
 
 cloud_get_urls:	## Get URLs of all deployed services
 	@echo "Getting deployed service URLs..."
@@ -198,7 +230,7 @@ cloud_get_urls:	## Get URLs of all deployed services
 
 cloud_update_env:	## Update .env file with deployed API URL
 	@echo "Updating API_BASE_URL in .env file..."
-	@API_URL=$$(gcloud run services describe $(PROJECT)-api --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
+	@API_URL=$$(gcloud run services describe $(PACKAGE_NAME)-api --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
 	if [ -n "$$API_URL" ]; then \
 		sed -i.bak 's|^API_BASE_URL=.*|API_BASE_URL='$$API_URL'|' .env && \
 		echo "Updated API_BASE_URL to: $$API_URL"; \
@@ -206,7 +238,7 @@ cloud_update_env:	## Update .env file with deployed API URL
 		echo "Failed to get API URL"; \
 	fi
 	@echo "Updating APP_BASE_URL in .env file..."
-	@APP_URL=$$(gcloud run services describe $(PROJECT)-app --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
+	@APP_URL=$$(gcloud run services describe $(PACKAGE_NAME)-app --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
 	if [ -n "$$APP_URL" ]; then \
 		sed -i.bak 's|^APP_BASE_URL=.*|APP_BASE_URL='$$APP_URL'|' .env && \
 		echo "Updated APP_BASE_URL to: $$APP_URL"; \
