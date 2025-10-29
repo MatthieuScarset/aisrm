@@ -228,24 +228,6 @@ cloud_get_urls:	## Get URLs of all deployed services
 	@echo "APP URL:"
 	@$(MAKE) cloud_get_app_url
 
-cloud_update_env:	## Update .env file with deployed API URL
-	@echo "Updating API_BASE_URL in .env file..."
-	@API_URL=$$(gcloud run services describe $(PACKAGE_NAME)-api --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
-	if [ -n "$$API_URL" ]; then \
-		sed -i.bak 's|^API_BASE_URL=.*|API_BASE_URL='$$API_URL'|' .env && \
-		echo "Updated API_BASE_URL to: $$API_URL"; \
-	else \
-		echo "Failed to get API URL"; \
-	fi
-	@echo "Updating APP_BASE_URL in .env file..."
-	@APP_URL=$$(gcloud run services describe $(PACKAGE_NAME)-app --region=$(REGION) --format="value(status.url)" 2>/dev/null); \
-	if [ -n "$$APP_URL" ]; then \
-		sed -i.bak 's|^APP_BASE_URL=.*|APP_BASE_URL='$$APP_URL'|' .env && \
-		echo "Updated APP_BASE_URL to: $$APP_URL"; \
-	else \
-		echo "Failed to get API URL"; \
-	fi	
-
 ## ###############################################################################
 ## # Test commands
 ## ###############################################################################
